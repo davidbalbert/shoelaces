@@ -11,6 +11,10 @@ sl_value sl_parse_token(struct sl_interpreter_state *state, char *input)
                 return sl_true;
         } else if (strcmp(input, "false") == 0) {
                 return sl_false;
+        } else if (strcmp(input, "nil") == 0) {
+                return sl_nil;
+        } else if (strcmp(input, "()") == 0) {
+                return sl_nil;
         } else {
                 return sl_intern(state, input);
         }

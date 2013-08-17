@@ -41,7 +41,14 @@ struct SLBoolean
 #define SL_INTEGER(v) ((struct SLInteger*)(v))
 #define SL_BOOLEAN(v) ((struct SLBoolean*)(v))
 
+extern sl_value sl_tType;
+extern sl_value sl_tSymbol;
+extern sl_value sl_tInteger;
+extern sl_value sl_tBoolean;
+extern sl_value sl_tList;
+
 sl_value sl_new_type(char *name);
+sl_value sl_type(sl_value object);
 
 
 /* interpreter state and setup */
@@ -58,6 +65,7 @@ void sl_init_type();
 void sl_init_symbol();
 void sl_init_number();
 void sl_init_boolean();
+void sl_init_list();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
@@ -80,3 +88,6 @@ sl_value sl_intern(struct sl_interpreter_state *state, char *name);
 /* booleans */
 extern sl_value sl_true;
 extern sl_value sl_false;
+
+/* lists */
+extern sl_value sl_nil;
