@@ -6,6 +6,8 @@ shoelaces: shoelaces.c
 run-tests: test
 	./test
 
+.PHONY: run-tests
+
 test: test.o type.o number.o reader.o symbol.o eval.o
 
 test.o: test.c shoelaces.h
