@@ -24,6 +24,12 @@ sl_value sl_new_symbol(char *name)
         return sym;
 }
 
+void sl_symbol_p(sl_value symbol)
+{
+        assert(sl_type(symbol) == sl_tSymbol);
+        printf("%s\n", SL_SYMBOL(symbol)->name);
+}
+
 void sl_init_symbol()
 {
         sl_tSymbol = sl_new_type("Symbol");

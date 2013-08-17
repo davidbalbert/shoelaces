@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #include "khash.h"
 
@@ -62,6 +63,12 @@ extern sl_value sl_tList;
 sl_value sl_new_type(char *name);
 sl_value sl_type(sl_value object);
 
+/* printing */
+void sl_type_p(sl_value type);
+void sl_integer_p(sl_value integer);
+void sl_symbol_p(sl_value symbol);
+void sl_boolean_p(sl_value boolean);
+void sl_list_p(sl_value list);
 
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
@@ -78,13 +85,19 @@ void sl_init_symbol();
 void sl_init_number();
 void sl_init_boolean();
 void sl_init_list();
+void sl_init_reader();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
 
+/* util functions */
+void *memzero(void *p, size_t length);
 
 /* gc - haha */
 #define sl_alloc(type) (type*)malloc(sizeof(type))
+
+/* io */
+void sl_p(sl_value val);
 
 /* reader */
 sl_value sl_read(struct sl_interpreter_state *state, char *input);
@@ -104,6 +117,8 @@ extern sl_value sl_false;
 /* lists */
 extern sl_value sl_nil;
 
+sl_value sl_new_list(sl_value first, sl_value rest);
 sl_value sl_size(sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
+sl_value sl_reverse(sl_value list);

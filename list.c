@@ -1,11 +1,9 @@
-#include <assert.h>
-
 #include "shoelaces.h"
 
 sl_value sl_tList;
 sl_value sl_nil;
 
-sl_value sl_new_list(sl_value first, sl_value rest, sl_value size)
+static sl_value sl_alloc_list(sl_value first, sl_value rest, sl_value size)
 {
         sl_value l = sl_alloc(struct SLList);
         SL_BASIC(l)->type = sl_tList;
@@ -15,9 +13,36 @@ sl_value sl_new_list(sl_value first, sl_value rest, sl_value size)
         return l;
 }
 
+void sl_list_p(sl_value list)
+{
+        sl_value l = list;
+
+        if (l == sl_nil) {
+                printf("nil");
+        } else {
+                printf("(");
+
+                while (l != sl_nil) {
+                        sl_p(sl_first(l));
+                        l = sl_rest(l);
+                }
+
+                printf(")");
+        }
+
+}
+
+
+
 static sl_value sl_new_empty_list()
 {
-        return sl_new_list(NULL, NULL, sl_new_integer(0));
+        return sl_alloc_list(NULL, NULL, sl_new_integer(0));
+}
+
+sl_value sl_new_list(sl_value first, sl_value rest)
+{
+        sl_value new_size = sl_new_integer(NUM2INT(sl_size(rest)) + 1);
+        return sl_alloc_list(first, rest, new_size);
 }
 
 sl_value sl_first(sl_value list)
@@ -36,6 +61,20 @@ sl_value sl_size(sl_value list)
 {
         assert(sl_type(list) == sl_tList);
         return SL_LIST(list)->size;
+}
+
+sl_value sl_reverse(sl_value list)
+{
+        assert(sl_type(list) == sl_tList);
+
+        sl_value new_list = sl_nil;
+
+        while (list != sl_nil) {
+                new_list = sl_new_list(sl_first(list), new_list);
+                list = sl_rest(list);
+        }
+
+        return new_list;
 }
 
 void sl_init_list()

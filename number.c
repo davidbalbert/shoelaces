@@ -10,6 +10,12 @@ sl_value sl_new_integer(int i)
         return n;
 }
 
+void sl_integer_p(sl_value integer)
+{
+        assert(sl_type(integer) == sl_tInteger);
+        printf("%ld\n", NUM2INT(integer));
+}
+
 void sl_init_number()
 {
         sl_tInteger = sl_new_type("Integer");

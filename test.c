@@ -1,6 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
-
 #include "shoelaces.h"
 
 void test_symbol_table()
@@ -78,6 +75,42 @@ void test_read_nil_and_empty_list()
         sl_destroy(state);
 }
 
+void test_read_list()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value list = sl_read(state, "(a b c)");
+
+        assert(sl_type(list) == sl_tList);
+        assert(NUM2INT(sl_size(list)) == 3);
+
+        assert(sl_first(list) == sl_intern(state, "a"));
+        assert(sl_first(sl_rest(list)) == sl_intern(state, "b"));
+
+        sl_destroy(state);
+}
+
+void test_read_nested_list()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value list = sl_read(state, "(a (b c) d)");
+
+        assert(sl_type(list) == sl_tList);
+        assert(NUM2INT(sl_size(list)) == 3);
+
+        assert(sl_first(list) == sl_intern(state, "a"));
+
+        sl_value nested_list = sl_first(sl_rest(list));
+        assert(sl_type(nested_list) == sl_tList);
+        assert(NUM2INT(sl_size(nested_list)) == 2);
+        assert(sl_first(nested_list) == sl_intern(state, "b"));
+        assert(sl_first(sl_rest(nested_list)) == sl_intern(state, "c"));
+
+        assert(sl_first(sl_rest(sl_rest(list))) == sl_intern(state, "d"));
+
+        sl_destroy(state);
+}
 
 int main(int argc, char *argv[])
 {
@@ -86,6 +119,8 @@ int main(int argc, char *argv[])
         test_read_sym();
         test_read_boolean();
         test_read_nil_and_empty_list();
+        test_read_list();
+        test_read_nested_list();
 
         printf("Tests passed!\n");
         return 0;
