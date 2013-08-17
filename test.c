@@ -41,11 +41,25 @@ void test_read_sym()
         sl_destroy(state);
 }
 
+void test_read_boolean()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value t = sl_read_string(state, "true");
+
+        assert(t == sl_true);
+
+        sl_value f = sl_read_string(state, "false");
+
+        assert(f == sl_false);
+}
+
 int main(int argc, char *argv[])
 {
         test_symbol_table();
         test_read_integer();
         test_read_sym();
+        test_read_boolean();
 
         printf("Tests passed!\n");
         return 0;

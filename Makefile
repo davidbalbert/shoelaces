@@ -8,7 +8,7 @@ run-tests: test
 
 .PHONY: run-tests
 
-test: test.o type.o number.o reader.o symbol.o eval.o
+test: test.o type.o number.o reader.o symbol.o eval.o boolean.o
 
 test.o: test.c shoelaces.h
 
@@ -21,6 +21,8 @@ number.o: number.c shoelaces.h
 symbol.o: symbol.c shoelaces.h
 
 eval.o: eval.c shoelaces.h
+
+boolean.o: boolean.c shoelaces.h
 
 shoelaces.h: khash.h
 

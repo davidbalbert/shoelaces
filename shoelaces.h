@@ -29,10 +29,17 @@ struct SLInteger
         long value;
 };
 
+struct SLBoolean
+{
+        struct SLBasic basic;
+        char value;
+};
+
 #define SL_BASIC(v)   ((struct SLBasic*)(v))
 #define SL_TYPE(v)    ((struct SLType*)(v))
 #define SL_SYMBOL(v)  ((struct SLSymbol*)(v))
 #define SL_INTEGER(v) ((struct SLInteger*)(v))
+#define SL_BOOLEAN(v) ((struct SLBoolean*)(v))
 
 sl_value sl_new_type(char *name);
 
@@ -50,6 +57,7 @@ void sl_destroy(struct sl_interpreter_state *state);
 void sl_init_type();
 void sl_init_symbol();
 void sl_init_number();
+void sl_init_boolean();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
@@ -68,3 +76,7 @@ sl_value sl_new_integer(int i);
 
 /* symbols */
 sl_value sl_intern(struct sl_interpreter_state *state, char *name);
+
+/* booleans */
+extern sl_value sl_true;
+extern sl_value sl_false;

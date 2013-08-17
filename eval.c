@@ -30,6 +30,7 @@ struct sl_interpreter_state *sl_init()
         sl_init_type();
         sl_init_symbol();
         sl_init_number();
+        sl_init_boolean();
 
         return state;
 }
