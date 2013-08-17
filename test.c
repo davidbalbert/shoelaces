@@ -21,7 +21,7 @@ void test_read_integer()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value a = sl_read_string(state, "1");
+        sl_value a = sl_read(state, "1");
         sl_value b = sl_new_integer(1);
 
         assert(sl_type(a) == sl_tInteger);
@@ -34,7 +34,7 @@ void test_read_sym()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value a = sl_read_string(state, "foo");
+        sl_value a = sl_read(state, "foo");
         sl_value b = sl_intern(state, "foo");
 
         assert(a == b);
@@ -47,12 +47,12 @@ void test_read_boolean()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value t = sl_read_string(state, "true");
+        sl_value t = sl_read(state, "true");
 
         assert(sl_type(t) == sl_tBoolean);
         assert(t == sl_true);
 
-        sl_value f = sl_read_string(state, "false");
+        sl_value f = sl_read(state, "false");
 
         assert(sl_type(f) == sl_tBoolean);
         assert(f == sl_false);
@@ -64,13 +64,13 @@ void test_read_nil_and_empty_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value nil = sl_read_string(state, "nil");
+        sl_value nil = sl_read(state, "nil");
 
         assert(sl_type(nil) == sl_tList);
         assert(sl_nil == nil);
         assert(NUM2INT(sl_size(nil)) == 0);
 
-        sl_value empty_list = sl_read_string(state, "()");
+        sl_value empty_list = sl_read(state, "()");
 
         assert(sl_type(empty_list) == sl_tList);
         assert(sl_nil == empty_list);

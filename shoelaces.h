@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "khash.h"
 
@@ -84,7 +87,7 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
 #define sl_alloc(type) (type*)malloc(sizeof(type))
 
 /* reader */
-sl_value sl_read_string(struct sl_interpreter_state *state, char *input);
+sl_value sl_read(struct sl_interpreter_state *state, char *input);
 
 /* numbers */
 sl_value sl_new_integer(int i);
