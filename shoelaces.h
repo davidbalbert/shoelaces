@@ -40,6 +40,7 @@ struct SLList
         struct SLBasic basic;
         sl_value first;
         sl_value rest;
+        sl_value size;
 };
 
 #define SL_BASIC(v)   ((struct SLBasic*)(v))
@@ -99,3 +100,7 @@ extern sl_value sl_false;
 
 /* lists */
 extern sl_value sl_nil;
+
+sl_value sl_size(sl_value list);
+sl_value sl_first(sl_value list);
+sl_value sl_rest(sl_value list);
