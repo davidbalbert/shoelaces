@@ -17,32 +17,36 @@ void test_symbol_table()
         sl_destroy(state);
 }
 
-void test_read_integer(struct sl_interpreter_state *state)
+void test_read_integer()
 {
+        struct sl_interpreter_state *state = sl_init();
+
         sl_value a = sl_read_string(state, "1");
         sl_value b = sl_new_integer(1);
 
         assert(NUM2INT(a) == NUM2INT(b));
+
+        sl_destroy(state);
 }
 
-void test_read_sym(struct sl_interpreter_state *state)
+void test_read_sym()
 {
+        struct sl_interpreter_state *state = sl_init();
+
         sl_value a = sl_read_string(state, "foo");
         sl_value b = sl_intern(state, "foo");
 
         assert(a == b);
+
+        sl_destroy(state);
 }
 
 int main(int argc, char *argv[])
 {
         test_symbol_table();
-
-        struct sl_interpreter_state *state = sl_init();
-        test_read_integer(state);
-        test_read_sym(state);
+        test_read_integer();
+        test_read_sym();
 
         printf("Tests passed!\n");
-
-        sl_destroy(state);
         return 0;
 }
