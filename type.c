@@ -12,12 +12,7 @@ sl_value sl_new_type(char *name)
 
 sl_value sl_type(sl_value object)
 {
-        if (object == sl_nil)
-        {
-                return sl_tList;
-        } else {
-                return SL_BASIC(object)->type;
-        }
+        return SL_BASIC(object)->type;
 }
 
 void sl_init_type()

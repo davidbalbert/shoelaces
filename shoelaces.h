@@ -35,11 +35,19 @@ struct SLBoolean
         char value;
 };
 
+struct SLList
+{
+        struct SLBasic basic;
+        sl_value first;
+        sl_value rest;
+};
+
 #define SL_BASIC(v)   ((struct SLBasic*)(v))
 #define SL_TYPE(v)    ((struct SLType*)(v))
 #define SL_SYMBOL(v)  ((struct SLSymbol*)(v))
 #define SL_INTEGER(v) ((struct SLInteger*)(v))
 #define SL_BOOLEAN(v) ((struct SLBoolean*)(v))
+#define SL_LIST(v)    ((struct SLList*)(v))
 
 extern sl_value sl_tType;
 extern sl_value sl_tSymbol;
