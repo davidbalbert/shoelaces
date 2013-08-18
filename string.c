@@ -14,14 +14,48 @@ sl_value sl_new_string(char *value)
         return s;
 }
 
+sl_value sl_string_concat(sl_value s1, sl_value s2)
+{
+        char *str;
+        sl_value s;
+        int size;
+
+        if (sl_type(s1) != sl_tString) {
+                s1 = sl_inspect(s1);
+        }
+
+        if (sl_type(s2) != sl_tString) {
+                s2 = sl_inspect(s2);
+        }
+
+        size = NUM2INT(sl_size(s1)) + NUM2INT(sl_size(s2)) + 1;
+        str = malloc(size * sizeof(char));
+
+        sprintf(str, "%s%s", sl_string_cstring(s1), sl_string_cstring(s2));
+
+        s = sl_new_string(str);
+        free(str);
+
+        return s;
+}
+
 char *sl_string_cstring(sl_value string)
 {
+        assert(sl_type(string) == sl_tString);
         return SL_STRING(string)->value;
 }
 
-void sl_string_p(sl_value string)
+sl_value sl_string_inspect(sl_value string)
 {
-        printf("\"%s\"\n", sl_string_cstring(string));
+        assert(sl_type(string) == sl_tString);
+        char *str = malloc((NUM2INT(sl_size(string)) + 1) * sizeof(char));
+        sl_value s;
+
+        sprintf(str, "\"%s\"", sl_string_cstring(string));
+        s = sl_new_string(str);
+        free(str);
+
+        return s;
 }
 
 void sl_init_string()

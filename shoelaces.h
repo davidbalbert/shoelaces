@@ -18,13 +18,13 @@ struct SLBasic
 struct SLType
 {
         struct SLBasic basic;
-        char *name;
+        sl_value name;
 };
 
 struct SLSymbol
 {
         struct SLBasic basic;
-        char *name;
+        sl_value name;
 };
 
 struct SLInteger
@@ -69,16 +69,16 @@ extern sl_value sl_tBoolean;
 extern sl_value sl_tList;
 extern sl_value sl_tString;
 
-sl_value sl_new_type(char *name);
+sl_value sl_new_type(sl_value name);
 sl_value sl_type(sl_value object);
 
-/* printing */
-void sl_type_p(sl_value type);
-void sl_integer_p(sl_value integer);
-void sl_symbol_p(sl_value symbol);
-void sl_boolean_p(sl_value boolean);
-void sl_list_p(sl_value list);
-void sl_string_p(sl_value string);
+/* inspection */
+sl_value sl_type_inspect(sl_value type);
+sl_value sl_integer_inspect(sl_value integer);
+sl_value sl_symbol_inspect(sl_value symbol);
+sl_value sl_boolean_inspect(sl_value boolean);
+sl_value sl_list_inspect(sl_value list);
+sl_value sl_string_inspect(sl_value string);
 
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
@@ -133,8 +133,11 @@ sl_value sl_size(sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
 sl_value sl_reverse(sl_value list);
+sl_value sl_list_join(sl_value strings, sl_value seperator);
 
 /* strings */
 char *sl_string_cstring(sl_value string);
 
 sl_value sl_new_string(char *value);
+sl_value sl_inspect(sl_value val);
+sl_value sl_string_concat(sl_value s1, sl_value s2);

@@ -13,26 +13,33 @@ static sl_value sl_alloc_list(sl_value first, sl_value rest, sl_value size)
         return l;
 }
 
-void sl_list_p(sl_value list)
+sl_value sl_list_inspect(sl_value list)
 {
-        sl_value l = list;
+        sl_value str;
 
-        if (l == sl_empty_list) {
-                printf("nil");
+        if (list == sl_empty_list) {
+                return sl_new_string("()");
         } else {
-                printf("(");
-
-                while (l != sl_empty_list) {
-                        sl_p(sl_first(l));
-                        l = sl_rest(l);
-                }
-
-                printf(")");
+                str = sl_new_string("(");
+                str = sl_string_concat(str, sl_list_join(list, sl_new_string(" ")));
+                return sl_string_concat(str, sl_new_string(")"));
         }
-
 }
 
+sl_value sl_list_join(sl_value strings, sl_value seperator)
+{
+        sl_value output = sl_new_string("");
 
+        while (strings != sl_empty_list) {
+                output = sl_string_concat(output, sl_inspect(sl_first(strings)));
+                strings = sl_rest(strings);
+
+                if (strings != sl_empty_list)
+                        output = sl_string_concat(output, seperator);
+        }
+
+        return output;
+}
 
 static sl_value sl_new_empty_list()
 {
@@ -84,6 +91,6 @@ sl_value sl_reverse(sl_value list)
 
 void sl_init_list()
 {
-        sl_tList = sl_new_type("List");
+        sl_tList = sl_new_type(sl_new_string("List"));
         sl_empty_list = sl_new_empty_list();
 }

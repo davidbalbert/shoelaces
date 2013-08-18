@@ -57,7 +57,20 @@ void test_read_boolean()
         sl_destroy(state);
 }
 
-void test_read_nil_and_empty_list()
+void test_read_string()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value str = sl_read(state, "\"Hello, world!\"");
+
+        assert(sl_type(str) == sl_tString);
+        assert(NUM2INT(sl_size(str)) == strlen("Hello, world!"));
+        assert(strcmp(sl_string_cstring(str), "Hello, world!") == 0);
+
+        sl_destroy(state);
+}
+
+void test_read_empty_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -73,13 +86,22 @@ void test_read_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value list = sl_read(state, "(a b c)");
+        sl_value list = sl_read(state, "(123 true sym \"string\")");
+        sl_value v;
 
         assert(sl_type(list) == sl_tList);
-        assert(NUM2INT(sl_size(list)) == 3);
+        assert(NUM2INT(sl_size(list)) == 4);
 
-        assert(sl_first(list) == sl_intern(state, "a"));
-        assert(sl_first(sl_rest(list)) == sl_intern(state, "b"));
+        assert(sl_type(sl_first(list)) == sl_tInteger);
+        assert(NUM2INT(sl_first(list)) == 123);
+
+        assert(sl_first(sl_rest(list)) == sl_true);
+
+        assert(sl_first(sl_rest(sl_rest(list))) == sl_intern(state, "sym"));
+
+        v = sl_first(sl_rest(sl_rest(sl_rest(list))));
+        assert(sl_type(v) == sl_tString);
+        assert(strcmp(sl_string_cstring(v), "string") == 0);
 
         sl_destroy(state);
 }
@@ -121,18 +143,6 @@ void test_read_quote()
         sl_destroy(state);
 }
 
-void test_read_string()
-{
-        struct sl_interpreter_state *state = sl_init();
-
-        sl_value str = sl_read(state, "\"Hello, world!\"");
-
-        assert(sl_type(str) == sl_tString);
-        assert(NUM2INT(sl_size(str)) == strlen("Hello, world!"));
-        assert(strcmp(sl_string_cstring(str), "Hello, world!") == 0);
-
-        sl_destroy(state);
-}
 
 int main(int argc, char *argv[])
 {
@@ -140,11 +150,11 @@ int main(int argc, char *argv[])
         test_read_integer();
         test_read_sym();
         test_read_boolean();
-        test_read_nil_and_empty_list();
+        test_read_string();
         test_read_list();
         test_read_nested_list();
+        test_read_empty_list();
         test_read_quote();
-        test_read_string();
 
         printf("Tests passed!\n");
         return 0;

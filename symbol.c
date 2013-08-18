@@ -2,7 +2,7 @@
 
 sl_value sl_tSymbol;
 
-sl_value sl_new_symbol(char *name);
+static sl_value sl_new_symbol(sl_value name);
 
 sl_value sl_intern(struct sl_interpreter_state *state, char *name)
 {
@@ -10,13 +10,13 @@ sl_value sl_intern(struct sl_interpreter_state *state, char *name)
         if ((sym = sl_symbol_table_get(state, name))) {
                 return sym;
         } else {
-                sym = sl_new_symbol(name);
+                sym = sl_new_symbol(sl_new_string(name));
                 sl_symbol_table_put(state, name, sym);
                 return sym;
         }
 }
 
-sl_value sl_new_symbol(char *name)
+static sl_value sl_new_symbol(sl_value name)
 {
         sl_value sym = sl_alloc(struct SLSymbol);
         SL_BASIC(sym)->type = sl_tSymbol;
@@ -24,13 +24,13 @@ sl_value sl_new_symbol(char *name)
         return sym;
 }
 
-void sl_symbol_p(sl_value symbol)
+sl_value sl_symbol_inspect(sl_value symbol)
 {
         assert(sl_type(symbol) == sl_tSymbol);
-        printf("%s\n", SL_SYMBOL(symbol)->name);
+        return SL_SYMBOL(symbol)->name;
 }
 
 void sl_init_symbol()
 {
-        sl_tSymbol = sl_new_type("Symbol");
+        sl_tSymbol = sl_new_type(sl_new_string("Symbol"));
 }

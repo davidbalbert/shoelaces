@@ -12,18 +12,18 @@ static sl_value sl_new_boolean(char value)
         return b;
 }
 
-void sl_boolean_p(sl_value boolean)
+sl_value sl_boolean_inspect(sl_value boolean)
 {
         assert(sl_type(boolean) == sl_tBoolean);
         if (SL_BOOLEAN(boolean)->value)
-                printf("true\n");
+                return sl_new_string("true");
         else
-                printf("false\n");
+                return sl_new_string("false");
 }
 
 void sl_init_boolean()
 {
-        sl_tBoolean = sl_new_type("Boolean");
+        sl_tBoolean = sl_new_type(sl_new_string("Boolean"));
         sl_true = sl_new_boolean(1);
         sl_false = sl_new_boolean(0);
 }
