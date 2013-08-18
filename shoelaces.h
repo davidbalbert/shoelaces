@@ -115,7 +115,7 @@ extern sl_value sl_true;
 extern sl_value sl_false;
 
 /* lists */
-extern sl_value sl_nil;
+extern sl_value sl_empty_list;
 
 sl_value sl_new_list(sl_value first, sl_value rest);
 sl_value sl_size(sl_value list);

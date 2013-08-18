@@ -130,8 +130,6 @@ static sl_value sl_reader_parse_token(struct sl_interpreter_state *state, char *
                 return sl_true;
         } else if (strcmp(token, "false") == 0) {
                 return sl_false;
-        } else if (strcmp(token, "nil") == 0) {
-                return sl_nil;
         } else {
                 return sl_intern(state, token);
         }
@@ -183,7 +181,7 @@ static sl_value sl_reader_read(struct sl_interpreter_state *state, struct sl_rea
 
 static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        sl_value list = sl_nil;
+        sl_value list = sl_empty_list;
         sl_value val;
 
         while (1) {

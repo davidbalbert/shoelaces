@@ -61,16 +61,10 @@ void test_read_nil_and_empty_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
-        sl_value nil = sl_read(state, "nil");
-
-        assert(sl_type(nil) == sl_tList);
-        assert(sl_nil == nil);
-        assert(NUM2INT(sl_size(nil)) == 0);
-
         sl_value empty_list = sl_read(state, "()");
 
         assert(sl_type(empty_list) == sl_tList);
-        assert(sl_nil == empty_list);
+        assert(sl_empty_list == empty_list);
 
         sl_destroy(state);
 }

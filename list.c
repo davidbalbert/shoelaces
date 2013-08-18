@@ -1,7 +1,7 @@
 #include "shoelaces.h"
 
 sl_value sl_tList;
-sl_value sl_nil;
+sl_value sl_empty_list;
 
 static sl_value sl_alloc_list(sl_value first, sl_value rest, sl_value size)
 {
@@ -17,12 +17,12 @@ void sl_list_p(sl_value list)
 {
         sl_value l = list;
 
-        if (l == sl_nil) {
+        if (l == sl_empty_list) {
                 printf("nil");
         } else {
                 printf("(");
 
-                while (l != sl_nil) {
+                while (l != sl_empty_list) {
                         sl_p(sl_first(l));
                         l = sl_rest(l);
                 }
@@ -67,9 +67,9 @@ sl_value sl_reverse(sl_value list)
 {
         assert(sl_type(list) == sl_tList);
 
-        sl_value new_list = sl_nil;
+        sl_value new_list = sl_empty_list;
 
-        while (list != sl_nil) {
+        while (list != sl_empty_list) {
                 new_list = sl_new_list(sl_first(list), new_list);
                 list = sl_rest(list);
         }
@@ -80,5 +80,5 @@ sl_value sl_reverse(sl_value list)
 void sl_init_list()
 {
         sl_tList = sl_new_type("List");
-        sl_nil = sl_new_empty_list();
+        sl_empty_list = sl_new_empty_list();
 }
