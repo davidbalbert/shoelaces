@@ -133,6 +133,7 @@ sl_value sl_size(sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
 sl_value sl_reverse(sl_value list);
+sl_value sl_empty(sl_value list);
 sl_value sl_list_join(sl_value strings, sl_value seperator);
 
 /* strings */

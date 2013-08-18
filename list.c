@@ -17,7 +17,7 @@ sl_value sl_list_inspect(sl_value list)
 {
         sl_value str;
 
-        if (list == sl_empty_list) {
+        if (sl_empty(list) == sl_true) {
                 return sl_new_string("()");
         } else {
                 str = sl_new_string("(");
@@ -30,11 +30,13 @@ sl_value sl_list_join(sl_value strings, sl_value seperator)
 {
         sl_value output = sl_new_string("");
 
-        while (strings != sl_empty_list) {
+        /* TODO: tagged falsy values would be nice */
+        while (sl_empty(strings) != sl_true) {
                 output = sl_string_concat(output, sl_inspect(sl_first(strings)));
                 strings = sl_rest(strings);
 
-                if (strings != sl_empty_list)
+                /* TODO: tagged falsey values */
+                if (sl_empty(strings) != sl_true)
                         output = sl_string_concat(output, seperator);
         }
 
@@ -81,12 +83,20 @@ sl_value sl_reverse(sl_value list)
 
         sl_value new_list = sl_empty_list;
 
-        while (list != sl_empty_list) {
+        while (sl_empty(list) != sl_true) {
                 new_list = sl_new_list(sl_first(list), new_list);
                 list = sl_rest(list);
         }
 
         return new_list;
+}
+
+sl_value sl_empty(sl_value list)
+{
+        if (list == sl_empty_list)
+                return sl_true;
+        else
+                return sl_false;
 }
 
 void sl_init_list()
