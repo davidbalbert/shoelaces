@@ -106,6 +106,21 @@ void test_read_nested_list()
         sl_destroy(state);
 }
 
+void test_read_quote()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value list = sl_read(state, "'a");
+
+        assert(sl_type(list) == sl_tList);
+        assert(sl_first(list) == sl_intern(state, "quote"));
+
+        sl_value a = sl_first(sl_rest(list));
+        assert(a == sl_intern(state, "a"));
+
+        sl_destroy(state);
+}
+
 int main(int argc, char *argv[])
 {
         test_symbol_table();
@@ -115,6 +130,7 @@ int main(int argc, char *argv[])
         test_read_nil_and_empty_list();
         test_read_list();
         test_read_nested_list();
+        test_read_quote();
 
         printf("Tests passed!\n");
         return 0;

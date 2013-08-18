@@ -208,6 +208,12 @@ static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct s
         return sl_reverse(list);
 }
 
+static sl_value sl_reader_read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
+{
+        sl_value list = sl_new_list(sl_reader_read(state, reader), sl_empty_list);
+        return sl_new_list(sl_intern(state, "quote"), list);
+}
+
 sl_value sl_read(struct sl_interpreter_state *state, char *input)
 {
         struct sl_reader *reader = sl_new_reader(input);
@@ -222,4 +228,5 @@ void sl_init_reader()
         memzero(reader_macros, 256 * sizeof(reader_macro));
 
         reader_macros['('] = sl_reader_read_list;
+        reader_macros['\''] = sl_reader_read_quote;
 }
