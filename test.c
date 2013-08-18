@@ -143,6 +143,23 @@ void test_read_quote()
         sl_destroy(state);
 }
 
+void test_read_dotted_pair()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value dotted_pair = sl_read(state, "(1 . 2)");
+
+        assert(sl_type(dotted_pair) == sl_tList);
+
+        assert(sl_type(sl_first(dotted_pair)) == sl_tInteger);
+        assert(NUM2INT(sl_first(dotted_pair)) == 1);
+
+        assert(sl_type(sl_rest(dotted_pair)) == sl_tInteger);
+        assert(NUM2INT(sl_rest(dotted_pair)) == 2);
+
+        sl_destroy(state);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -155,6 +172,7 @@ int main(int argc, char *argv[])
         test_read_nested_list();
         test_read_empty_list();
         test_read_quote();
+        test_read_dotted_pair();
 
         printf("Tests passed!\n");
         return 0;

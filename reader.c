@@ -25,6 +25,14 @@ static void sl_reader_skip_one(struct sl_reader *reader)
         reader->end_position = reader->start_position;
 }
 
+static void sl_reader_unread_one(struct sl_reader *reader)
+{
+        reader->end_position--;
+        if (reader->start_position > reader->end_position) {
+                reader->start_position = reader->end_position;
+        }
+}
+
 static void sl_reader_advance_one(struct sl_reader *reader)
 {
         reader->end_position++;
@@ -59,6 +67,16 @@ static void sl_reader_eat_whitespace(struct sl_reader *reader)
         }
 }
 
+static void sl_reader_eat_through_end_of_list(struct sl_reader *reader)
+{
+        while (!sl_reader_at_end_of_list(reader) && !sl_reader_at_end_of_input(reader)) {
+                sl_reader_skip_one(reader);
+        }
+
+        if (!sl_reader_at_end_of_input(reader)) {
+                sl_reader_skip_one(reader);
+        }
+}
 
 static int sl_reader_next_char_is_digit(struct sl_reader *reader)
 {
@@ -165,6 +183,17 @@ static sl_value sl_reader_read(struct sl_interpreter_state *state, struct sl_rea
                         return NULL;
                 }
 
+                ch = sl_reader_peek(reader);
+                if (ch == '.') {
+                        sl_reader_skip_one(reader);
+                        if (sl_reader_next_char_is_whitespace(reader) || sl_reader_at_end_of_input(reader)) {
+                                sl_reader_error(reader, "Unexpected '.' outside dotted pair");
+                        }
+
+                        sl_reader_unread_one(reader);
+                }
+
+
                 if (sl_reader_next_char_is_digit(reader)) {
                         return sl_reader_read_integer(reader);
                 }
@@ -182,13 +211,41 @@ static sl_value sl_reader_read(struct sl_interpreter_state *state, struct sl_rea
 static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         sl_value list = sl_empty_list;
+        sl_value new_list;
         sl_value val;
 
         while (1) {
                 sl_reader_eat_whitespace(reader);
 
                 if (sl_reader_at_end_of_input(reader)) {
-                        sl_reader_error(reader, "Reached EOF but expected ')'");
+                        sl_reader_error(reader, "Reached EOF, but expected ')'");
+                }
+
+                if ('.' == sl_reader_peek(reader)) {
+                        sl_reader_skip_one(reader);
+
+                        if (sl_reader_next_char_is_whitespace(reader)) {
+                                val = sl_reader_read(state, reader);
+
+                                sl_reader_eat_whitespace(reader);
+
+                                if (sl_reader_at_end_of_input(reader)) {
+                                        sl_reader_error(reader, "Reached EOF, but expected ')'");
+                                }
+
+                                if (!sl_reader_at_end_of_list(reader)) {
+                                        sl_reader_eat_through_end_of_list(reader);
+                                        sl_reader_error(reader, "More than one object follows '.' in list");
+                                }
+
+                                new_list = val;
+                                while (sl_empty(list) != sl_true) {
+                                        new_list = sl_new_list(sl_first(list), new_list);
+                                        list = sl_rest(list);
+                                }
+
+                                return new_list;
+                        }
                 }
 
                 if (sl_reader_at_end_of_list(reader)) {

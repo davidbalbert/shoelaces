@@ -50,7 +50,18 @@ static sl_value sl_new_empty_list()
 
 sl_value sl_new_list(sl_value first, sl_value rest)
 {
-        sl_value new_size = sl_new_integer(NUM2INT(sl_size(rest)) + 1);
+        sl_value new_size;
+
+        if (sl_type(rest) == sl_tList) {
+                new_size = sl_new_integer(NUM2INT(sl_size(rest)) + 1);
+        } else {
+                /* TODO: The size of a list shouldn't be false. We
+                 * should raise an exception here instead because
+                 * you're not allowed to call size on a dotted pair
+                 * */
+                new_size = sl_false;
+        }
+
         return sl_alloc_list(first, rest, new_size);
 }
 
