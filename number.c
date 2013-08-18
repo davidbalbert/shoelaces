@@ -2,7 +2,7 @@
 
 sl_value sl_tInteger;
 
-sl_value sl_new_integer(int i)
+sl_value sl_integer_new(int i)
 {
         sl_value n = sl_alloc(struct SLInteger);
         SL_BASIC(n)->type = sl_tInteger;
@@ -18,10 +18,10 @@ sl_value sl_integer_inspect(sl_value integer)
 
         sprintf(inspect_str, "%ld", NUM2INT(integer));
 
-        return sl_new_string(inspect_str);
+        return sl_string_new(inspect_str);
 }
 
 void sl_init_number()
 {
-        sl_tInteger = sl_new_type(sl_new_string("Integer"));
+        sl_tInteger = sl_type_new(sl_string_new("Integer"));
 }

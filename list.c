@@ -18,17 +18,17 @@ sl_value sl_list_inspect(sl_value list)
         sl_value str;
 
         if (sl_empty(list) == sl_true) {
-                return sl_new_string("()");
+                return sl_string_new("()");
         } else {
-                str = sl_new_string("(");
-                str = sl_string_concat(str, sl_list_join(list, sl_new_string(" ")));
-                return sl_string_concat(str, sl_new_string(")"));
+                str = sl_string_new("(");
+                str = sl_string_concat(str, sl_list_join(list, sl_string_new(" ")));
+                return sl_string_concat(str, sl_string_new(")"));
         }
 }
 
 sl_value sl_list_join(sl_value strings, sl_value seperator)
 {
-        sl_value output = sl_new_string("");
+        sl_value output = sl_string_new("");
 
         /* TODO: tagged falsy values would be nice */
         while (sl_empty(strings) != sl_true) {
@@ -43,17 +43,18 @@ sl_value sl_list_join(sl_value strings, sl_value seperator)
         return output;
 }
 
-static sl_value sl_new_empty_list()
+static sl_value sl_empty_list_new()
 {
-        return sl_alloc_list(NULL, NULL, sl_new_integer(0));
+        /* TODO: these NULL's should move to undefineds when sl_false becomes 0 */
+        return sl_alloc_list(NULL, NULL, sl_integer_new(0));
 }
 
-sl_value sl_new_list(sl_value first, sl_value rest)
+sl_value sl_list_new(sl_value first, sl_value rest)
 {
         sl_value new_size;
 
         if (sl_type(rest) == sl_tList) {
-                new_size = sl_new_integer(NUM2INT(sl_size(rest)) + 1);
+                new_size = sl_integer_new(NUM2INT(sl_size(rest)) + 1);
         } else {
                 /* TODO: The size of a list shouldn't be false. We
                  * should raise an exception here instead because
@@ -95,7 +96,7 @@ sl_value sl_reverse(sl_value list)
         sl_value new_list = sl_empty_list;
 
         while (sl_empty(list) != sl_true) {
-                new_list = sl_new_list(sl_first(list), new_list);
+                new_list = sl_list_new(sl_first(list), new_list);
                 list = sl_rest(list);
         }
 
@@ -112,6 +113,6 @@ sl_value sl_empty(sl_value list)
 
 void sl_init_list()
 {
-        sl_tList = sl_new_type(sl_new_string("List"));
-        sl_empty_list = sl_new_empty_list();
+        sl_tList = sl_type_new(sl_string_new("List"));
+        sl_empty_list = sl_empty_list_new();
 }

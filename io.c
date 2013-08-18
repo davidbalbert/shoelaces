@@ -8,7 +8,7 @@ sl_value sl_generic_inspect(sl_value val)
 
         sprintf(inspect_string, "#<%s>", SL_TYPE(type)->name);
 
-        str = sl_new_string(inspect_string);
+        str = sl_string_new(inspect_string);
         free(inspect_string);
 
         return str;

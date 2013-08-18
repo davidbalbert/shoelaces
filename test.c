@@ -19,7 +19,7 @@ void test_read_integer()
         struct sl_interpreter_state *state = sl_init();
 
         sl_value a = sl_read(state, "1");
-        sl_value b = sl_new_integer(1);
+        sl_value b = sl_integer_new(1);
 
         assert(sl_type(a) == sl_tInteger);
         assert(NUM2INT(a) == NUM2INT(b));

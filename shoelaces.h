@@ -69,7 +69,7 @@ extern sl_value sl_tBoolean;
 extern sl_value sl_tList;
 extern sl_value sl_tString;
 
-sl_value sl_new_type(sl_value name);
+sl_value sl_type_new(sl_value name);
 sl_value sl_type(sl_value object);
 
 /* inspection */
@@ -114,7 +114,7 @@ void sl_p(sl_value val);
 sl_value sl_read(struct sl_interpreter_state *state, char *input);
 
 /* numbers */
-sl_value sl_new_integer(int i);
+sl_value sl_integer_new(int i);
 
 #define NUM2INT(n) SL_INTEGER(n)->value
 
@@ -128,7 +128,7 @@ extern sl_value sl_false;
 /* lists */
 extern sl_value sl_empty_list;
 
-sl_value sl_new_list(sl_value first, sl_value rest);
+sl_value sl_list_new(sl_value first, sl_value rest);
 sl_value sl_size(sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
@@ -139,6 +139,6 @@ sl_value sl_list_join(sl_value strings, sl_value seperator);
 /* strings */
 char *sl_string_cstring(sl_value string);
 
-sl_value sl_new_string(char *value);
+sl_value sl_string_new(char *value);
 sl_value sl_inspect(sl_value val);
 sl_value sl_string_concat(sl_value s1, sl_value s2);

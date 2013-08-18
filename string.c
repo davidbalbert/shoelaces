@@ -2,14 +2,14 @@
 
 sl_value sl_tString;
 
-sl_value sl_new_string(char *value)
+sl_value sl_string_new(char *value)
 {
         sl_value s = sl_alloc(struct SLString);
         SL_BASIC(s)->type = sl_tString;
 
         /* TODO: check for ENOMEM */
         SL_STRING(s)->value = strdup(value);
-        SL_STRING(s)->size = sl_new_integer(strlen(SL_STRING(s)->value));
+        SL_STRING(s)->size = sl_integer_new(strlen(SL_STRING(s)->value));
 
         return s;
 }
@@ -33,7 +33,7 @@ sl_value sl_string_concat(sl_value s1, sl_value s2)
 
         sprintf(str, "%s%s", sl_string_cstring(s1), sl_string_cstring(s2));
 
-        s = sl_new_string(str);
+        s = sl_string_new(str);
         free(str);
 
         return s;
@@ -52,7 +52,7 @@ sl_value sl_string_inspect(sl_value string)
         sl_value s;
 
         sprintf(str, "\"%s\"", sl_string_cstring(string));
-        s = sl_new_string(str);
+        s = sl_string_new(str);
         free(str);
 
         return s;
@@ -60,5 +60,5 @@ sl_value sl_string_inspect(sl_value string)
 
 void sl_init_string()
 {
-        sl_tString = sl_new_type("String");
+        sl_tString = sl_type_new("String");
 }
