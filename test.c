@@ -121,6 +121,19 @@ void test_read_quote()
         sl_destroy(state);
 }
 
+void test_read_string()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value str = sl_read(state, "\"Hello, world!\"");
+
+        assert(sl_type(str) == sl_tString);
+        assert(NUM2INT(sl_size(str)) == strlen("Hello, world!"));
+        assert(strcmp(sl_string_cstring(str), "Hello, world!") == 0);
+
+        sl_destroy(state);
+}
+
 int main(int argc, char *argv[])
 {
         test_symbol_table();
@@ -131,6 +144,7 @@ int main(int argc, char *argv[])
         test_read_list();
         test_read_nested_list();
         test_read_quote();
+        test_read_string();
 
         printf("Tests passed!\n");
         return 0;

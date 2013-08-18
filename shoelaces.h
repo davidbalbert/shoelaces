@@ -47,18 +47,27 @@ struct SLList
         sl_value size;
 };
 
+struct SLString
+{
+        struct SLBasic basic;
+        char *value;
+        sl_value size;
+};
+
 #define SL_BASIC(v)   ((struct SLBasic*)(v))
 #define SL_TYPE(v)    ((struct SLType*)(v))
 #define SL_SYMBOL(v)  ((struct SLSymbol*)(v))
 #define SL_INTEGER(v) ((struct SLInteger*)(v))
 #define SL_BOOLEAN(v) ((struct SLBoolean*)(v))
 #define SL_LIST(v)    ((struct SLList*)(v))
+#define SL_STRING(v)  ((struct SLString*)(v))
 
 extern sl_value sl_tType;
 extern sl_value sl_tSymbol;
 extern sl_value sl_tInteger;
 extern sl_value sl_tBoolean;
 extern sl_value sl_tList;
+extern sl_value sl_tString;
 
 sl_value sl_new_type(char *name);
 sl_value sl_type(sl_value object);
@@ -69,6 +78,7 @@ void sl_integer_p(sl_value integer);
 void sl_symbol_p(sl_value symbol);
 void sl_boolean_p(sl_value boolean);
 void sl_list_p(sl_value list);
+void sl_string_p(sl_value string);
 
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
@@ -85,6 +95,7 @@ void sl_init_symbol();
 void sl_init_number();
 void sl_init_boolean();
 void sl_init_list();
+void sl_init_string();
 void sl_init_reader();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
@@ -122,3 +133,8 @@ sl_value sl_size(sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
 sl_value sl_reverse(sl_value list);
+
+/* strings */
+char *sl_string_cstring(sl_value string);
+
+sl_value sl_new_string(char *value);

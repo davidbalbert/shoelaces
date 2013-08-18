@@ -208,6 +208,30 @@ static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct s
         return sl_reverse(list);
 }
 
+static sl_value sl_reader_read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
+{
+        char *token;
+        sl_value str;
+
+        while (sl_reader_peek(reader) != '"' && !sl_reader_at_end_of_input(reader)) {
+                sl_reader_advance_one(reader);
+        }
+
+        if (sl_reader_at_end_of_input(reader)) {
+                sl_reader_error(reader, "Expected close quote, but got EOF");
+        }
+
+        token = sl_reader_get_token(reader);
+
+        sl_reader_skip_one(reader); /* the closing quote */
+
+        str = sl_new_string(token);
+
+        free(token);
+
+        return str;
+}
+
 static sl_value sl_reader_read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         sl_value list = sl_new_list(sl_reader_read(state, reader), sl_empty_list);
@@ -229,4 +253,5 @@ void sl_init_reader()
 
         reader_macros['('] = sl_reader_read_list;
         reader_macros['\''] = sl_reader_read_quote;
+        reader_macros['"'] = sl_reader_read_string;
 }

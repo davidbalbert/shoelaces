@@ -14,6 +14,8 @@ void sl_p(sl_value val)
                 sl_boolean_p(val);
         else if (sl_tList == type)
                 sl_list_p(val);
+        else if (sl_tString == type)
+                sl_string_p(val);
         else
                 printf("#<%s>\n", SL_TYPE(sl_type(val))->name);
 }

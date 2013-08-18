@@ -57,10 +57,15 @@ sl_value sl_rest(sl_value list)
         return SL_LIST(list)->rest;
 }
 
-sl_value sl_size(sl_value list)
+sl_value sl_size(sl_value val)
 {
-        assert(sl_type(list) == sl_tList);
-        return SL_LIST(list)->size;
+        sl_value type = sl_type(val);
+        assert(type == sl_tList || type == sl_tString);
+
+        if (type == sl_tList)
+                return SL_LIST(val)->size;
+        else
+                return SL_STRING(val)->size;
 }
 
 sl_value sl_reverse(sl_value list)
