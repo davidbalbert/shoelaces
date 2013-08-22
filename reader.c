@@ -174,7 +174,7 @@ static sl_value sl_reader_read_integer(struct sl_reader *reader)
 
 static sl_value sl_reader_read(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        char ch;
+        unsigned char ch;
 
         while (1) {
                 sl_reader_eat_whitespace(reader);
