@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g
+CFLAGS=-g -Wall
 
 shoelaces: shoelaces.c
 
@@ -8,7 +8,7 @@ run-tests: test
 
 .PHONY: run-tests
 
-test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o
+test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o
 
 test.o: test.c shoelaces.h
 
@@ -31,6 +31,8 @@ util.o: util.c shoelaces.h
 io.o: io.c shoelaces.h
 
 string.o: string.c shoelaces.h
+
+gc.o: gc.c shoelaces.h
 
 shoelaces.h: khash.h
 

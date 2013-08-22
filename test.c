@@ -160,9 +160,48 @@ void test_read_dotted_pair()
         sl_destroy(state);
 }
 
+/*
+void test_eval_type()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "Type");
+
+        sl_value out = sl_eval(state, in, NULL);
+
+        assert(out == sl_tType);
+
+        sl_destroy(state);
+}
+*/
+
+void test_gc()
+{
+        struct sl_interpreter_state *state = sl_init();
+        int i;
+        size_t object_count;
+
+        object_count = sl_gc_heap_size();
+
+        for (i = 0; i < 100; i++) {
+                sl_string_new("hello, world");
+        }
+
+        sl_gc_run();
+
+        printf("before %ld\n", object_count);
+        printf("after %ld\n", sl_gc_heap_size());
+
+        assert(sl_gc_heap_size() < object_count);
+
+
+        sl_destroy(state);
+}
+
 
 int main(int argc, char *argv[])
 {
+        /* reader */
         test_symbol_table();
         test_read_integer();
         test_read_sym();
@@ -173,6 +212,10 @@ int main(int argc, char *argv[])
         test_read_empty_list();
         test_read_quote();
         test_read_dotted_pair();
+
+        //test_eval_type();
+
+        test_gc();
 
         printf("Tests passed!\n");
         return 0;

@@ -13,6 +13,7 @@ typedef void * sl_value;
 struct SLBasic
 {
         sl_value type;
+        unsigned int gc_mark:1;
 };
 
 struct SLType
@@ -44,7 +45,7 @@ struct SLList
         struct SLBasic basic;
         sl_value first;
         sl_value rest;
-        sl_value size;
+        sl_value size; // Maybe this should be an int
 };
 
 struct SLString
@@ -97,6 +98,7 @@ void sl_init_boolean();
 void sl_init_list();
 void sl_init_string();
 void sl_init_reader();
+void sl_init_gc();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
@@ -104,8 +106,27 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
 /* util functions */
 void *memzero(void *p, size_t length);
 
+/* eval */
+sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);
+
+/* variable bindings */
+sl_value sl_env_get(struct sl_interpreter_state *state, sl_value name);
+
 /* gc - haha */
-#define sl_alloc(type) (type*)malloc(sizeof(type))
+
+struct sl_heap
+{
+        sl_value *slots;
+        size_t capacity;
+        size_t size;
+};
+
+size_t sl_gc_heap_size();
+void sl_gc_run();
+sl_value sl_gc_alloc(size_t size);
+
+#define sl_alloc(type) sl_gc_alloc(sizeof(type))
+#define sl_dealloc(value) free(value)
 
 /* io */
 void sl_p(sl_value val);

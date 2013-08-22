@@ -27,6 +27,8 @@ struct sl_interpreter_state *sl_init()
         struct sl_interpreter_state *state = malloc(sizeof(struct sl_interpreter_state));
         state->symbol_table = kh_init(str);
 
+        sl_init_gc();
+
         sl_init_type();
         sl_init_symbol();
         sl_init_number();
@@ -44,3 +46,21 @@ void sl_destroy(struct sl_interpreter_state *state)
         kh_destroy(str, state->symbol_table);
         free(state);
 }
+
+/*
+sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment)
+{
+        if (sl_type(expression) == sl_tSymbol) {
+                if (sl_env_has_key(state, environment)
+                        return sl_env_get(state, environment);
+        } else {
+                assert(0);
+                return sl_false;
+        }
+}
+
+sl_value sl_env_get(struct sl_interpreter_state *state, sl_value name)
+{
+        sl_value 
+}
+*/
