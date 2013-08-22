@@ -2,7 +2,6 @@
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
 {
-        int ret;
         khiter_t iter;
 
         iter = kh_get(str, state->symbol_table, name);
