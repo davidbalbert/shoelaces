@@ -45,14 +45,14 @@ struct SLList
         struct SLBasic basic;
         sl_value first;
         sl_value rest;
-        sl_value size; // Maybe this should be an int
+        sl_value size; // Maybe this should be a size_t
 };
 
 struct SLString
 {
         struct SLBasic basic;
         char *value;
-        sl_value size;
+        size_t size;
 };
 
 #define SL_BASIC(v)   ((struct SLBasic*)(v))

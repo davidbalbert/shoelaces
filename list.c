@@ -86,7 +86,7 @@ sl_value sl_size(sl_value val)
         if (type == sl_tList)
                 return SL_LIST(val)->size;
         else
-                return SL_STRING(val)->size;
+                return sl_integer_new(SL_STRING(val)->size);
 }
 
 sl_value sl_reverse(sl_value list)

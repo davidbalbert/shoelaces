@@ -9,7 +9,7 @@ sl_value sl_string_new(char *value)
 
         /* TODO: check for ENOMEM */
         SL_STRING(s)->value = strdup(value);
-        SL_STRING(s)->size = sl_integer_new(strlen(SL_STRING(s)->value));
+        SL_STRING(s)->size = strlen(SL_STRING(s)->value);
 
         return s;
 }
