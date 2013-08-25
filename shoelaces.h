@@ -45,7 +45,7 @@ struct SLList
         struct SLBasic basic;
         sl_value first;
         sl_value rest;
-        sl_value size; // Maybe this should be a size_t
+        size_t size;
 };
 
 struct SLString

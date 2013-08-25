@@ -3,7 +3,7 @@
 sl_value sl_tList;
 sl_value sl_empty_list;
 
-static sl_value sl_alloc_list(sl_value first, sl_value rest, sl_value size)
+static sl_value sl_alloc_list(sl_value first, sl_value rest, size_t size)
 {
         sl_value l = sl_alloc(struct SLList);
         SL_BASIC(l)->type = sl_tList;
@@ -46,21 +46,21 @@ sl_value sl_list_join(sl_value strings, sl_value seperator)
 static sl_value sl_empty_list_new()
 {
         /* TODO: these NULL's should move to undefineds when sl_false becomes 0 */
-        return sl_alloc_list(NULL, NULL, sl_integer_new(0));
+        return sl_alloc_list(NULL, NULL, 0);
 }
 
 sl_value sl_list_new(sl_value first, sl_value rest)
 {
-        sl_value new_size;
+        size_t new_size;
 
         if (sl_type(rest) == sl_tList) {
-                new_size = sl_integer_new(NUM2INT(sl_size(rest)) + 1);
+                new_size = NUM2INT(sl_size(rest)) + 1;
         } else {
-                /* TODO: The size of a list shouldn't be false. We
+                /* TODO: The size of a list should never be -1. We
                  * should raise an exception here instead because
                  * you're not allowed to call size on a dotted pair
                  * */
-                new_size = sl_false;
+                new_size = -1;
         }
 
         return sl_alloc_list(first, rest, new_size);
@@ -84,7 +84,7 @@ sl_value sl_size(sl_value val)
         assert(type == sl_tList || type == sl_tString);
 
         if (type == sl_tList)
-                return SL_LIST(val)->size;
+                return sl_integer_new(SL_LIST(val)->size);
         else
                 return sl_integer_new(SL_STRING(val)->size);
 }
