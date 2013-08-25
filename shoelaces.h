@@ -99,6 +99,7 @@ void sl_init_list();
 void sl_init_string();
 void sl_init_reader();
 void sl_init_gc();
+void sl_fix_type_names();
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);

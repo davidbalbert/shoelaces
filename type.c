@@ -22,8 +22,16 @@ sl_value sl_type_inspect(sl_value type)
         return SL_TYPE(type)->name;
 }
 
-void sl_init_type()
+void
+sl_init_type()
 {
         sl_tType = sl_type_new(sl_string_new("Type"));
         SL_BASIC(sl_tType)->type = sl_tType;
+}
+
+void
+sl_fix_type_names()
+{
+        SL_BASIC(SL_TYPE(sl_tType)->name)->type = sl_tString;
+        SL_BASIC(SL_TYPE(sl_tString)->name)->type = sl_tString;
 }

@@ -28,12 +28,30 @@ struct sl_interpreter_state *sl_init()
 
         sl_init_gc();
 
+        /* The order of these next three init calls is important.
+         * Because type names are strings, and sl_tString isn't set
+         * until after sl_init_string is called, the names of
+         * sl_tType and sl_tString both have their types pointed at
+         * something other than sl_tString. We fix this in
+         * sl_fix_type_names.
+         *
+         * An alternative approach (that the Ruby interpreter
+         * takes) is making type names Symbols instead of strings.
+         * In the symbol table lookup function, the class of the
+         * symbol name is checked before the symbol is returned. If
+         * it's NULL, it is changed to the String class. The value
+         * of doing things that way is that the order of the type
+         * init functions would no longer matter and we could get
+         * rid of sl_fix_type_names. I may experiment with doing
+         * that at some point in the future. */
         sl_init_type();
+        sl_init_string();
+        sl_fix_type_names();
+
         sl_init_symbol();
         sl_init_number();
         sl_init_boolean();
         sl_init_list();
-        sl_init_string();
 
         sl_init_reader();
 

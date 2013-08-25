@@ -198,7 +198,6 @@ void test_gc()
         sl_destroy(state);
 }
 
-
 int main(int argc, char *argv[])
 {
         /* reader */
