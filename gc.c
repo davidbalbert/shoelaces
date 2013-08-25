@@ -72,9 +72,6 @@ mark(sl_value value)
         } else if (sl_tList == type) {
                 mark(SL_LIST(value)->first);
                 mark(SL_LIST(value)->rest);
-                mark(SL_LIST(value)->size);
-        } else if (sl_tString == type) {
-                mark(SL_STRING(value)->size);
         }
 }
 
