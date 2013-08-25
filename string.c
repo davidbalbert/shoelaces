@@ -60,5 +60,5 @@ sl_value sl_string_inspect(sl_value string)
 
 void sl_init_string()
 {
-        sl_tString = sl_type_new("String");
+        sl_tString = sl_type_new(sl_string_new("String"));
 }
