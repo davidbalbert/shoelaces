@@ -175,30 +175,30 @@ void test_eval_type()
 }
 */
 
-void test_gc()
+void
+test_gc()
 {
         struct sl_interpreter_state *state = sl_init();
-        int i;
-        size_t object_count;
+        size_t old_object_count;
 
-        object_count = sl_gc_heap_size();
+        old_object_count = sl_gc_heap_size();
 
-        for (i = 0; i < 100; i++) {
+        for (int i = 0; i < 12345; i++) {
                 sl_string_new("hello, world");
         }
 
         sl_gc_run();
 
-        printf("before %ld\n", object_count);
-        printf("after %ld\n", sl_gc_heap_size());
-
-        assert(sl_gc_heap_size() < object_count);
-
+        /* less than old object_count because there are some things
+         * that aren't currently part of the root set. Namely, (),
+         * true, and false */
+        assert(sl_gc_heap_size() <= old_object_count);
 
         sl_destroy(state);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
         /* reader */
         test_symbol_table();

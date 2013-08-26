@@ -65,6 +65,10 @@ mark(sl_value value)
 
         sl_value type = sl_type(value);
 
+        /* XXX: There's no need to mark the type of each object because all
+         * types should be part of the root set. We might want to mark the type
+         * field anyway though. I'm not sure. */
+
         if (sl_tType == type) {
                 mark(SL_TYPE(value)->name);
         } else if (sl_tSymbol == type) {
@@ -147,6 +151,30 @@ sl_native_malloc(size_t size)
                 fprintf(stderr, "Out of memory!\n");
                 abort();
         }
+
+        /* It's obvious what this next line does, but perhaps it would be good
+         * to explain the motivation. I ran into a bug with an early version of
+         * the garbage collector. I was allocating many objects and not
+         * referencing any of them from the root set. Once I allocated enough
+         * objects to fill up the heap and trigger the garbage collector, some
+         * of the objects I subsequently allocated stuck around, even when the
+         * GC was forced to run. After some thinking I realized that I was
+         * assuming that all of the marked objects were marked during a call to
+         * mark(). My assumption was incorrect because malloc doesn't make any
+         * guarantees about the state of the memory allocated (calloc, on the
+         * other hand, zeroes the memory before returning the pointer, but
+         * we're not using it). Some objects were being returned with their
+         * mark bit already set, and because I don't touch the mark bit in
+         * object initialization, this information was persisting to garbage
+         * collection and the objects were sticking around.
+         *
+         * Thinking about this bug revealed another bug: mark bits weren't
+         * being cleared before each GC run. This meant that once an object was
+         * marked, it would stick around forever. Had I caught this bug earlier
+         * and cleared all the mark bits before each GC run, I might not have
+         * realized that I was returning uninitialized data from this
+         * function.*/
+        memzero(p, size);
 
         return p;
 }
