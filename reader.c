@@ -1,14 +1,21 @@
 #include "shoelaces.h"
 
+struct sl_reader;
+
+typedef sl_value (*reader_macro)(struct sl_interpreter_state *state, struct sl_reader *reader);
+
+static sl_value read_list(struct sl_interpreter_state *state, struct sl_reader *reader);
+static sl_value read_quote(struct sl_interpreter_state *state, struct sl_reader *reader);
+static sl_value read_string(struct sl_interpreter_state *state, struct sl_reader *reader);
+
 struct sl_reader
 {
         char *input;
         char *start_position;
         char *end_position;
-};
 
-typedef sl_value (*reader_macro)(struct sl_interpreter_state *state, struct sl_reader *reader);
-static reader_macro reader_macros[256];
+        reader_macro macros[256];
+};
 
 static struct sl_reader *
 new_reader(char *input)
@@ -17,6 +24,10 @@ new_reader(char *input)
         reader->input = input;
         reader->start_position = input;
         reader->end_position = input;
+
+        reader->macros['('] = read_list;
+        reader->macros['\''] = read_quote;
+        reader->macros['"'] = read_string;
         return reader;
 }
 
@@ -218,9 +229,9 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
                 }
 
                 ch = peek(reader);
-                if (reader_macros[ch]) {
+                if (reader->macros[ch]) {
                         skip_one(reader);
-                        return reader_macros[ch](state, reader);
+                        return reader->macros[ch](state, reader);
                 }
 
                 return parse_token(state, read_token(reader));
@@ -330,9 +341,4 @@ sl_read(struct sl_interpreter_state *state, char *input)
 void
 sl_init_reader(struct sl_interpreter_state *state)
 {
-        memzero(reader_macros, 256 * sizeof(reader_macro));
-
-        reader_macros['('] = read_list;
-        reader_macros['\''] = read_quote;
-        reader_macros['"'] = read_string;
 }
