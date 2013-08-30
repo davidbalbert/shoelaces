@@ -63,19 +63,23 @@ struct SLString
 #define SL_LIST(v)    ((struct SLList*)(v))
 #define SL_STRING(v)  ((struct SLString*)(v))
 
-extern sl_value sl_tType;
-extern sl_value sl_tSymbol;
-extern sl_value sl_tInteger;
-extern sl_value sl_tBoolean;
-extern sl_value sl_tList;
-extern sl_value sl_tString;
-
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
 
 struct sl_interpreter_state {
         khash_t(str) *symbol_table;
         struct sl_heap *heap;
+
+        sl_value tType;
+        sl_value tSymbol;
+        sl_value tInteger;
+        sl_value tBoolean;
+        sl_value tList;
+        sl_value tString;
+
+        sl_value sl_true;
+        sl_value sl_false;
+        sl_value sl_empty_list;
 };
 
 struct sl_interpreter_state *sl_init();
@@ -136,23 +140,18 @@ sl_value sl_integer_new(struct sl_interpreter_state *state, int i);
 /* symbols */
 sl_value sl_intern(struct sl_interpreter_state *state, char *name);
 
-/* booleans */
-extern sl_value sl_true;
-extern sl_value sl_false;
-
 /* lists */
-extern sl_value sl_empty_list;
 
 sl_value sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest);
 sl_value sl_size(struct sl_interpreter_state *state, sl_value list);
-sl_value sl_first(sl_value list);
-sl_value sl_rest(sl_value list);
+sl_value sl_first(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_rest(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
-sl_value sl_empty(sl_value list);
+sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value seperator);
 
 /* strings */
-char *sl_string_cstring(sl_value string);
+char *sl_string_cstring(struct sl_interpreter_state *state, sl_value string);
 
 sl_value sl_string_new(struct sl_interpreter_state *state, char *value);
 sl_value sl_inspect(struct sl_interpreter_state *state, sl_value val);

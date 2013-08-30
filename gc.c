@@ -5,7 +5,7 @@
 static sl_value *find_free_slot(struct sl_interpreter_state *state);
 static void increase_heap_size(struct sl_interpreter_state *state);
 static void get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count);
-static void mark(sl_value value);
+static void mark(struct sl_interpreter_state *state, sl_value value);
 static void unmark_all(struct sl_interpreter_state *state);
 static void sweep_all(struct sl_interpreter_state *state);
 static int marked(sl_value value);
@@ -27,7 +27,7 @@ sl_gc_run(struct sl_interpreter_state *state)
         get_roots(state, &roots, &root_count);
 
         for (size_t i = 0; i < root_count; i++) {
-                mark(roots[i]);
+                mark(state, roots[i]);
         }
 
         free(roots);
@@ -39,12 +39,12 @@ static void
 get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count)
 {
         *roots = (sl_value *)sl_native_malloc(6 * sizeof(sl_value));
-        (*roots)[0] = sl_tType;
-        (*roots)[1] = sl_tSymbol;
-        (*roots)[2] = sl_tInteger;
-        (*roots)[3] = sl_tBoolean;
-        (*roots)[4] = sl_tList;
-        (*roots)[5] = sl_tString;
+        (*roots)[0] = state->tType;
+        (*roots)[1] = state->tSymbol;
+        (*roots)[2] = state->tInteger;
+        (*roots)[3] = state->tBoolean;
+        (*roots)[4] = state->tList;
+        (*roots)[5] = state->tString;
 
         *roots_count = 6;
 }
@@ -55,7 +55,7 @@ get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_co
  * This should be rewritten with a queue.
  */
 static void
-mark(sl_value value)
+mark(struct sl_interpreter_state *state, sl_value value)
 {
         if (!value || marked(value)) {
                 return;
@@ -69,13 +69,13 @@ mark(sl_value value)
          * types should be part of the root set. We might want to mark the type
          * field anyway though. I'm not sure. */
 
-        if (sl_tType == type) {
-                mark(SL_TYPE(value)->name);
-        } else if (sl_tSymbol == type) {
-                mark(SL_SYMBOL(value)->name);
-        } else if (sl_tList == type) {
-                mark(SL_LIST(value)->first);
-                mark(SL_LIST(value)->rest);
+        if (state->tType == type) {
+                mark(state, SL_TYPE(value)->name);
+        } else if (state->tSymbol == type) {
+                mark(state, SL_SYMBOL(value)->name);
+        } else if (state->tList == type) {
+                mark(state, SL_LIST(value)->first);
+                mark(state, SL_LIST(value)->rest);
         }
 }
 

@@ -1,13 +1,10 @@
 #include "shoelaces.h"
 
-sl_value sl_tList;
-sl_value sl_empty_list;
-
 static sl_value
 sl_alloc_list(struct sl_interpreter_state *state, sl_value first, sl_value rest, size_t size)
 {
         sl_value l = sl_gc_alloc(state, sizeof(struct SLList));
-        SL_BASIC(l)->type = sl_tList;
+        SL_BASIC(l)->type = state->tList;
         SL_LIST(l)->first = first;
         SL_LIST(l)->rest = rest;
         SL_LIST(l)->size = size;
@@ -19,7 +16,7 @@ sl_list_inspect(struct sl_interpreter_state *state, sl_value list)
 {
         sl_value str;
 
-        if (sl_empty(list) == sl_true) {
+        if (sl_empty(state, list) == state->sl_true) {
                 return sl_string_new(state, "()");
         } else {
                 str = sl_string_new(state, "(");
@@ -34,12 +31,12 @@ sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value sepe
         sl_value output = sl_string_new(state, "");
 
         /* TODO: tagged falsy values would be nice */
-        while (sl_empty(strings) != sl_true) {
-                output = sl_string_concat(state, output, sl_inspect(state, sl_first(strings)));
-                strings = sl_rest(strings);
+        while (sl_empty(state, strings) != state->sl_true) {
+                output = sl_string_concat(state, output, sl_inspect(state, sl_first(state, strings)));
+                strings = sl_rest(state, strings);
 
                 /* TODO: tagged falsey values */
-                if (sl_empty(strings) != sl_true)
+                if (sl_empty(state, strings) != state->sl_true)
                         output = sl_string_concat(state, output, seperator);
         }
 
@@ -58,7 +55,7 @@ sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest)
 {
         size_t new_size;
 
-        if (sl_type(rest) == sl_tList) {
+        if (sl_type(rest) == state->tList) {
                 new_size = NUM2INT(sl_size(state, rest)) + 1;
         } else {
                 /* TODO: The size of a list should never be -1. We
@@ -72,16 +69,16 @@ sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest)
 }
 
 sl_value
-sl_first(sl_value list)
+sl_first(struct sl_interpreter_state *state, sl_value list)
 {
-        assert(sl_type(list) == sl_tList);
+        assert(sl_type(list) == state->tList);
         return SL_LIST(list)->first;
 }
 
 sl_value
-sl_rest(sl_value list)
+sl_rest(struct sl_interpreter_state *state, sl_value list)
 {
-        assert(sl_type(list) == sl_tList);
+        assert(sl_type(list) == state->tList);
         return SL_LIST(list)->rest;
 }
 
@@ -89,9 +86,9 @@ sl_value
 sl_size(struct sl_interpreter_state *state, sl_value val)
 {
         sl_value type = sl_type(val);
-        assert(type == sl_tList || type == sl_tString);
+        assert(type == state->tList || type == state->tString);
 
-        if (type == sl_tList)
+        if (type == state->tList)
                 return sl_integer_new(state, SL_LIST(val)->size);
         else
                 return sl_integer_new(state, SL_STRING(val)->size);
@@ -100,30 +97,30 @@ sl_size(struct sl_interpreter_state *state, sl_value val)
 sl_value
 sl_reverse(struct sl_interpreter_state *state, sl_value list)
 {
-        assert(sl_type(list) == sl_tList);
+        assert(sl_type(list) == state->tList);
 
-        sl_value new_list = sl_empty_list;
+        sl_value new_list = state->sl_empty_list;
 
-        while (sl_empty(list) != sl_true) {
-                new_list = sl_list_new(state, sl_first(list), new_list);
-                list = sl_rest(list);
+        while (sl_empty(state, list) != state->sl_true) {
+                new_list = sl_list_new(state, sl_first(state, list), new_list);
+                list = sl_rest(state, list);
         }
 
         return new_list;
 }
 
 sl_value
-sl_empty(sl_value list)
+sl_empty(struct sl_interpreter_state *state, sl_value list)
 {
-        if (list == sl_empty_list)
-                return sl_true;
+        if (list == state->sl_empty_list)
+                return state->sl_true;
         else
-                return sl_false;
+                return state->sl_false;
 }
 
 void
 sl_init_list(struct sl_interpreter_state *state)
 {
-        sl_tList = sl_type_new(state, sl_string_new(state, "List"));
-        sl_empty_list = sl_empty_list_new(state);
+        state->tList = sl_type_new(state, sl_string_new(state, "List"));
+        state->sl_empty_list = sl_empty_list_new(state);
 }

@@ -162,9 +162,9 @@ static sl_value
 parse_token(struct sl_interpreter_state *state, char *token)
 {
         if (strcmp(token, "true") == 0) {
-                return sl_true;
+                return state->sl_true;
         } else if (strcmp(token, "false") == 0) {
-                return sl_false;
+                return state->sl_false;
         } else {
                 return sl_intern(state, token);
         }
@@ -230,7 +230,7 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
 static sl_value
 read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        sl_value list = sl_empty_list;
+        sl_value list = state->sl_empty_list;
         sl_value new_list;
         sl_value val;
 
@@ -259,9 +259,9 @@ read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
                                 }
 
                                 new_list = val;
-                                while (sl_empty(list) != sl_true) {
-                                        new_list = sl_list_new(state, sl_first(list), new_list);
-                                        list = sl_rest(list);
+                                while (sl_empty(state, list) != state->sl_true) {
+                                        new_list = sl_list_new(state, sl_first(state, list), new_list);
+                                        list = sl_rest(state, list);
                                 }
 
                                 return new_list;
@@ -313,7 +313,7 @@ read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
 static sl_value
 read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        sl_value list = sl_list_new(state, read(state, reader), sl_empty_list);
+        sl_value list = sl_list_new(state, read(state, reader), state->sl_empty_list);
         return sl_list_new(state, sl_intern(state, "quote"), list);
 }
 
