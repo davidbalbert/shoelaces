@@ -10,7 +10,8 @@ struct sl_reader
 typedef sl_value (*reader_macro)(struct sl_interpreter_state *state, struct sl_reader *reader);
 static reader_macro reader_macros[256];
 
-static struct sl_reader *sl_reader_new(char *input)
+static struct sl_reader *
+new_reader(char *input)
 {
         struct sl_reader *reader = sl_native_malloc(sizeof(struct sl_reader));
         reader->input = input;
@@ -19,13 +20,15 @@ static struct sl_reader *sl_reader_new(char *input)
         return reader;
 }
 
-static void sl_reader_skip_one(struct sl_reader *reader)
+static void
+skip_one(struct sl_reader *reader)
 {
         reader->start_position++;
         reader->end_position = reader->start_position;
 }
 
-static void sl_reader_unread_one(struct sl_reader *reader)
+static void
+unread_one(struct sl_reader *reader)
 {
         reader->end_position--;
         if (reader->start_position > reader->end_position) {
@@ -33,71 +36,82 @@ static void sl_reader_unread_one(struct sl_reader *reader)
         }
 }
 
-static void sl_reader_advance_one(struct sl_reader *reader)
+static void
+advance_one(struct sl_reader *reader)
 {
         reader->end_position++;
 }
 
-static int sl_reader_peek(struct sl_reader *reader)
+static int
+peek(struct sl_reader *reader)
 {
         return *reader->end_position;
 }
 
-static int sl_reader_at_end_of_input(struct sl_reader *reader)
+static int
+at_end_of_input(struct sl_reader *reader)
 {
         return *reader->end_position == '\0';
 }
 
-static int sl_reader_at_end_of_list(struct sl_reader *reader)
+static int
+at_end_of_list(struct sl_reader *reader)
 {
         return *reader->end_position == ')';
 }
 
-static int sl_reader_next_char_is_whitespace(struct sl_reader *reader)
+static int
+next_char_is_whitespace(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
 
         return isspace(ch);
 }
 
-static void sl_reader_eat_whitespace(struct sl_reader *reader)
+static void
+eat_whitespace(struct sl_reader *reader)
 {
-        while (sl_reader_next_char_is_whitespace(reader)) {
-                sl_reader_skip_one(reader);
+        while (next_char_is_whitespace(reader)) {
+                skip_one(reader);
         }
 }
 
-static void sl_reader_eat_through_end_of_list(struct sl_reader *reader)
+static void
+eat_through_end_of_list(struct sl_reader *reader)
 {
-        while (!sl_reader_at_end_of_list(reader) && !sl_reader_at_end_of_input(reader)) {
-                sl_reader_skip_one(reader);
+        while (!at_end_of_list(reader) && !at_end_of_input(reader)) {
+                skip_one(reader);
         }
 
-        if (!sl_reader_at_end_of_input(reader)) {
-                sl_reader_skip_one(reader);
+        if (!at_end_of_input(reader)) {
+                skip_one(reader);
         }
 }
 
-static int sl_reader_next_char_is_digit(struct sl_reader *reader)
+static int
+next_char_is_digit(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
 
         return isdigit(ch);
 }
 
-static int sl_reader_next_char_is_list_delimeter(struct sl_reader *reader)
+static int
+next_char_is_list_delimeter(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
 
         return ch == '(' || ch == ')';
 }
 
-static int sl_reader_token_length(struct sl_reader *reader)
+static int
+token_length(struct sl_reader *reader)
 {
         return reader->end_position - reader->start_position;
 }
 
-static void sl_reader_error(struct sl_reader *reader, char *format, ...)
+static void
+reader_error(struct sl_reader *reader, char *format, ...)
 {
         char *format_with_prelude;
         char *prelude;
@@ -118,9 +132,10 @@ static void sl_reader_error(struct sl_reader *reader, char *format, ...)
 /*
  * You must free the returned token yourself
  */
-static char *sl_reader_get_token(struct sl_reader *reader)
+static char *
+get_token(struct sl_reader *reader)
 {
-        int length = sl_reader_token_length(reader);
+        int length = token_length(reader);
         char *token = sl_native_malloc(sizeof(char) * length + 1);
 
         strncpy(token, reader->start_position, length);
@@ -131,18 +146,20 @@ static char *sl_reader_get_token(struct sl_reader *reader)
         return token;
 }
 
-static char *sl_reader_read_token(struct sl_reader *reader)
+static char *
+read_token(struct sl_reader *reader)
 {
         while (1) {
-                if (sl_reader_next_char_is_whitespace(reader) || sl_reader_next_char_is_list_delimeter(reader) || sl_reader_at_end_of_input(reader)) {
-                        return sl_reader_get_token(reader);
+                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                        return get_token(reader);
                 } else {
-                        sl_reader_advance_one(reader);
+                        advance_one(reader);
                 }
         }
 }
 
-static sl_value sl_reader_parse_token(struct sl_interpreter_state *state, char *token)
+static sl_value
+parse_token(struct sl_interpreter_state *state, char *token)
 {
         if (strcmp(token, "true") == 0) {
                 return sl_true;
@@ -153,89 +170,92 @@ static sl_value sl_reader_parse_token(struct sl_interpreter_state *state, char *
         }
 }
 
-static sl_value sl_reader_read_integer(struct sl_reader *reader)
+static sl_value
+read_integer(struct sl_reader *reader)
 {
         char *token;
         sl_value number;
 
         while (1) {
-                if (sl_reader_next_char_is_digit(reader)) {
-                        sl_reader_advance_one(reader);
-                } else if (sl_reader_next_char_is_whitespace(reader) || sl_reader_next_char_is_list_delimeter(reader) || sl_reader_at_end_of_input(reader)) {
-                        token = sl_reader_get_token(reader);
+                if (next_char_is_digit(reader)) {
+                        advance_one(reader);
+                } else if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                        token = get_token(reader);
                         number = sl_integer_new(strtol(token, NULL, 10));
                         free(token);
                         return number;
                 } else {
-                        sl_reader_error(reader, "Expecting digit, but got %c", sl_reader_peek(reader));
+                        reader_error(reader, "Expecting digit, but got %c", peek(reader));
                 }
         }
 }
 
-static sl_value sl_reader_read(struct sl_interpreter_state *state, struct sl_reader *reader)
+static sl_value
+read(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         unsigned char ch;
 
         while (1) {
-                sl_reader_eat_whitespace(reader);
+                eat_whitespace(reader);
 
-                if (sl_reader_at_end_of_input(reader)) {
+                if (at_end_of_input(reader)) {
                         return NULL;
                 }
 
-                ch = sl_reader_peek(reader);
+                ch = peek(reader);
                 if (ch == '.') {
-                        sl_reader_skip_one(reader);
-                        if (sl_reader_next_char_is_whitespace(reader) || sl_reader_at_end_of_input(reader)) {
-                                sl_reader_error(reader, "Unexpected '.' outside dotted pair");
+                        skip_one(reader);
+                        if (next_char_is_whitespace(reader) || at_end_of_input(reader)) {
+                                reader_error(reader, "Unexpected '.' outside dotted pair");
                         }
 
-                        sl_reader_unread_one(reader);
+                        unread_one(reader);
                 }
 
 
-                if (sl_reader_next_char_is_digit(reader)) {
-                        return sl_reader_read_integer(reader);
+                if (next_char_is_digit(reader)) {
+                        return read_integer(reader);
                 }
 
-                ch = sl_reader_peek(reader);
+                ch = peek(reader);
                 if (reader_macros[ch]) {
-                        sl_reader_skip_one(reader);
+                        skip_one(reader);
                         return reader_macros[ch](state, reader);
                 }
 
-                return sl_reader_parse_token(state, sl_reader_read_token(reader));
+                return parse_token(state, read_token(reader));
         }
 }
 
-static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
+static sl_value
+read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         sl_value list = sl_empty_list;
         sl_value new_list;
         sl_value val;
 
         while (1) {
-                sl_reader_eat_whitespace(reader);
+                eat_whitespace(reader);
 
-                if (sl_reader_at_end_of_input(reader)) {
-                        sl_reader_error(reader, "Reached EOF, but expected ')'");
+                if (at_end_of_input(reader)) {
+                        reader_error(reader, "Reached EOF, but expected ')'");
                 }
 
-                if ('.' == sl_reader_peek(reader)) {
-                        sl_reader_skip_one(reader);
+                if ('.' == peek(reader)) {
+                        skip_one(reader);
 
-                        if (sl_reader_next_char_is_whitespace(reader)) {
-                                val = sl_reader_read(state, reader);
+                        if (next_char_is_whitespace(reader)) {
+                                val = read(state, reader);
 
-                                sl_reader_eat_whitespace(reader);
+                                eat_whitespace(reader);
 
-                                if (sl_reader_at_end_of_input(reader)) {
-                                        sl_reader_error(reader, "Reached EOF, but expected ')'");
+                                if (at_end_of_input(reader)) {
+                                        reader_error(reader, "Reached EOF, but expected ')'");
                                 }
 
-                                if (!sl_reader_at_end_of_list(reader)) {
-                                        sl_reader_eat_through_end_of_list(reader);
-                                        sl_reader_error(reader, "More than one object follows '.' in list");
+                                if (!at_end_of_list(reader)) {
+                                        eat_through_end_of_list(reader);
+                                        reader_error(reader, "More than one object follows '.' in list");
                                 }
 
                                 new_list = val;
@@ -248,12 +268,12 @@ static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct s
                         }
                 }
 
-                if (sl_reader_at_end_of_list(reader)) {
-                        sl_reader_skip_one(reader);
+                if (at_end_of_list(reader)) {
+                        skip_one(reader);
                         break;
                 }
 
-                val = sl_reader_read(state, reader);
+                val = read(state, reader);
 
                 /* val will be NULL only if we're at the end of input, but we
                  * checked for that already. */
@@ -265,22 +285,23 @@ static sl_value sl_reader_read_list(struct sl_interpreter_state *state, struct s
         return sl_reverse(list);
 }
 
-static sl_value sl_reader_read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
+static sl_value
+read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         char *token;
         sl_value str;
 
-        while (sl_reader_peek(reader) != '"' && !sl_reader_at_end_of_input(reader)) {
-                sl_reader_advance_one(reader);
+        while (peek(reader) != '"' && !at_end_of_input(reader)) {
+                advance_one(reader);
         }
 
-        if (sl_reader_at_end_of_input(reader)) {
-                sl_reader_error(reader, "Expected close quote, but got EOF");
+        if (at_end_of_input(reader)) {
+                reader_error(reader, "Expected close quote, but got EOF");
         }
 
-        token = sl_reader_get_token(reader);
+        token = get_token(reader);
 
-        sl_reader_skip_one(reader); /* the closing quote */
+        skip_one(reader); /* the closing quote */
 
         str = sl_string_new(token);
 
@@ -289,16 +310,18 @@ static sl_value sl_reader_read_string(struct sl_interpreter_state *state, struct
         return str;
 }
 
-static sl_value sl_reader_read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
+static sl_value
+read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        sl_value list = sl_list_new(sl_reader_read(state, reader), sl_empty_list);
+        sl_value list = sl_list_new(read(state, reader), sl_empty_list);
         return sl_list_new(sl_intern(state, "quote"), list);
 }
 
-sl_value sl_read(struct sl_interpreter_state *state, char *input)
+sl_value
+sl_read(struct sl_interpreter_state *state, char *input)
 {
-        struct sl_reader *reader = sl_reader_new(input);
-        sl_value val = sl_reader_read(state, reader);
+        struct sl_reader *reader = new_reader(input);
+        sl_value val = read(state, reader);
         free(reader);
 
         return val;
@@ -308,7 +331,7 @@ void sl_init_reader()
 {
         memzero(reader_macros, 256 * sizeof(reader_macro));
 
-        reader_macros['('] = sl_reader_read_list;
-        reader_macros['\''] = sl_reader_read_quote;
-        reader_macros['"'] = sl_reader_read_string;
+        reader_macros['('] = read_list;
+        reader_macros['\''] = read_quote;
+        reader_macros['"'] = read_string;
 }
