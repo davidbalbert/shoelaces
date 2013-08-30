@@ -192,7 +192,7 @@ test_gc()
         /* less than old object_count because there are some things
          * that aren't currently part of the root set. Namely, (),
          * true, and false */
-        assert(sl_gc_heap_size() <= old_object_count);
+        assert(sl_gc_heap_size() == old_object_count - 3);
 
         sl_destroy(state);
 }
