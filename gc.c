@@ -7,6 +7,7 @@ static void increase_heap_size();
 static void *sl_native_malloc(size_t size);
 static void get_roots(sl_value **roots, size_t *roots_count);
 static void mark(sl_value value);
+static void unmark_all();
 static void sweep_all();
 static int marked(sl_value value);
 
@@ -23,6 +24,8 @@ sl_gc_run()
 {
         sl_value *roots;
         size_t root_count;
+
+        unmark_all();
 
         get_roots(&roots, &root_count);
 
@@ -76,6 +79,16 @@ mark(sl_value value)
         } else if (sl_tList == type) {
                 mark(SL_LIST(value)->first);
                 mark(SL_LIST(value)->rest);
+        }
+}
+
+static void
+unmark_all()
+{
+        for (size_t i = 0; i < heap->capacity; i++) {
+                if (heap->slots[i]) {
+                        SL_BASIC(heap->slots[i])->gc_mark = 0;
+                }
         }
 }
 
