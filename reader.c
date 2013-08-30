@@ -12,7 +12,7 @@ static reader_macro reader_macros[256];
 
 static struct sl_reader *sl_reader_new(char *input)
 {
-        struct sl_reader *reader = malloc(sizeof(struct sl_reader));
+        struct sl_reader *reader = sl_native_malloc(sizeof(struct sl_reader));
         reader->input = input;
         reader->start_position = input;
         reader->end_position = input;
@@ -121,7 +121,7 @@ static void sl_reader_error(struct sl_reader *reader, char *format, ...)
 static char *sl_reader_get_token(struct sl_reader *reader)
 {
         int length = sl_reader_token_length(reader);
-        char *token = malloc(sizeof(char) * length + 1);
+        char *token = sl_native_malloc(sizeof(char) * length + 1);
 
         strncpy(token, reader->start_position, length);
         token[length] = '\0';

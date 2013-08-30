@@ -4,7 +4,7 @@ sl_value sl_generic_inspect(sl_value val)
 {
         sl_value type = sl_type(val);
         sl_value str;
-        char *inspect_string = malloc((4 + NUM2INT(sl_size(SL_TYPE(type)->name))) * sizeof(char));
+        char *inspect_string = sl_native_malloc((4 + NUM2INT(sl_size(SL_TYPE(type)->name))) * sizeof(char));
 
         sprintf(inspect_string, "#<%s>", sl_string_cstring(SL_TYPE(type)->name));
 

@@ -125,6 +125,7 @@ struct sl_heap
 size_t sl_gc_heap_size();
 void sl_gc_run();
 sl_value sl_gc_alloc(size_t size);
+void * sl_native_malloc(size_t size);
 
 #define sl_alloc(type) sl_gc_alloc(sizeof(type))
 #define sl_dealloc(value) free(value)

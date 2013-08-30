@@ -23,7 +23,7 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
 
 struct sl_interpreter_state *sl_init()
 {
-        struct sl_interpreter_state *state = malloc(sizeof(struct sl_interpreter_state));
+        struct sl_interpreter_state *state = sl_native_malloc(sizeof(struct sl_interpreter_state));
         state->symbol_table = kh_init(str);
 
         sl_init_gc();

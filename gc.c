@@ -4,7 +4,6 @@
 
 static sl_value *find_free_slot();
 static void increase_heap_size();
-static void *sl_native_malloc(size_t size);
 static void get_roots(sl_value **roots, size_t *roots_count);
 static void mark(sl_value value);
 static void unmark_all();
@@ -156,7 +155,7 @@ increase_heap_size()
         memzero(heap->slots + heap->capacity / 2, heap->capacity / 2);
 }
 
-static void *
+void *
 sl_native_malloc(size_t size)
 {
         void *p = malloc(size);
