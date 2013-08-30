@@ -21,22 +21,22 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
         kh_value(state->symbol_table, iter) = value;
 }
 
-void sl_init_type();
-void sl_init_symbol();
-void sl_init_number();
-void sl_init_boolean();
-void sl_init_list();
-void sl_init_string();
-void sl_init_reader();
-void sl_init_gc();
-void sl_fix_type_names();
+void sl_init_type(struct sl_interpreter_state *state);
+void sl_init_symbol(struct sl_interpreter_state *state);
+void sl_init_number(struct sl_interpreter_state *state);
+void sl_init_boolean(struct sl_interpreter_state *state);
+void sl_init_list(struct sl_interpreter_state *state);
+void sl_init_string(struct sl_interpreter_state *state);
+void sl_init_reader(struct sl_interpreter_state *state);
+void sl_init_gc(struct sl_interpreter_state *state);
+void sl_fix_type_names(struct sl_interpreter_state *state);
 
 struct sl_interpreter_state *sl_init()
 {
         struct sl_interpreter_state *state = sl_native_malloc(sizeof(struct sl_interpreter_state));
         state->symbol_table = kh_init(str);
 
-        sl_init_gc();
+        sl_init_gc(state);
 
         /* The order of these next three init calls is important.
          * Because type names are strings, and sl_tString isn't set
@@ -54,16 +54,16 @@ struct sl_interpreter_state *sl_init()
          * init functions would no longer matter and we could get
          * rid of sl_fix_type_names. I may experiment with doing
          * that at some point in the future. */
-        sl_init_type();
-        sl_init_string();
-        sl_fix_type_names();
+        sl_init_type(state);
+        sl_init_string(state);
+        sl_fix_type_names(state);
 
-        sl_init_symbol();
-        sl_init_number();
-        sl_init_boolean();
-        sl_init_list();
+        sl_init_symbol(state);
+        sl_init_number(state);
+        sl_init_boolean(state);
+        sl_init_list(state);
 
-        sl_init_reader();
+        sl_init_reader(state);
 
         return state;
 }

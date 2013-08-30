@@ -2,31 +2,29 @@
 
 #define INITIAL_HEAP_CAPACITY 1000
 
-static sl_value *find_free_slot();
-static void increase_heap_size();
-static void get_roots(sl_value **roots, size_t *roots_count);
+static sl_value *find_free_slot(struct sl_interpreter_state *state);
+static void increase_heap_size(struct sl_interpreter_state *state);
+static void get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count);
 static void mark(sl_value value);
-static void unmark_all();
-static void sweep_all();
+static void unmark_all(struct sl_interpreter_state *state);
+static void sweep_all(struct sl_interpreter_state *state);
 static int marked(sl_value value);
 
-static struct sl_heap *heap;
-
 size_t
-sl_gc_heap_size()
+sl_gc_heap_size(struct sl_interpreter_state *state)
 {
-        return heap->size;
+        return state->heap->size;
 }
 
 void
-sl_gc_run()
+sl_gc_run(struct sl_interpreter_state *state)
 {
         sl_value *roots;
         size_t root_count;
 
-        unmark_all();
+        unmark_all(state);
 
-        get_roots(&roots, &root_count);
+        get_roots(state, &roots, &root_count);
 
         for (size_t i = 0; i < root_count; i++) {
                 mark(roots[i]);
@@ -34,11 +32,11 @@ sl_gc_run()
 
         free(roots);
 
-        sweep_all();
+        sweep_all(state);
 }
 
 static void
-get_roots(sl_value **roots, size_t *roots_count)
+get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count)
 {
         *roots = (sl_value *)sl_native_malloc(6 * sizeof(sl_value));
         (*roots)[0] = sl_tType;
@@ -82,8 +80,10 @@ mark(sl_value value)
 }
 
 static void
-unmark_all()
+unmark_all(struct sl_interpreter_state *state)
 {
+        struct sl_heap *heap = state->heap;
+
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i]) {
                         SL_BASIC(heap->slots[i])->gc_mark = 0;
@@ -92,8 +92,10 @@ unmark_all()
 }
 
 static void
-sweep_all()
+sweep_all(struct sl_interpreter_state *state)
 {
+        struct sl_heap *heap = state->heap;
+
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i] && !marked(heap->slots[i])) {
                         sl_dealloc(heap->slots[i]);
@@ -110,28 +112,30 @@ marked(sl_value value)
 }
 
 sl_value
-sl_gc_alloc(size_t size)
+sl_gc_alloc(struct sl_interpreter_state *state, size_t size)
 {
-        sl_value *slot = find_free_slot();
+        sl_value *slot = find_free_slot(state);
         if (!slot) {
-                sl_gc_run();
-                slot = find_free_slot();
+                sl_gc_run(state);
+                slot = find_free_slot(state);
 
                 if (!slot) {
-                        increase_heap_size();
-                        return sl_gc_alloc(size);
+                        increase_heap_size(state);
+                        return sl_gc_alloc(state, size);
                 }
         }
 
         *slot = (sl_value)sl_native_malloc(size);
-        heap->size++;
+        state->heap->size++;
 
         return *slot;
 }
 
 static sl_value *
-find_free_slot()
+find_free_slot(struct sl_interpreter_state *state)
 {
+        struct sl_heap *heap = state->heap;
+
         for (size_t i = heap->capacity; i > 0; i--) {
                 if (!heap->slots[i - 1]) {
                         return &heap->slots[i - 1];
@@ -142,8 +146,10 @@ find_free_slot()
 }
 
 static void
-increase_heap_size()
+increase_heap_size(struct sl_interpreter_state *state)
 {
+        struct sl_heap *heap = state->heap;
+
         heap->capacity *= 2;
         heap->slots = realloc(heap->slots, heap->capacity * sizeof(sl_value));
 
@@ -192,9 +198,10 @@ sl_native_malloc(size_t size)
 }
 
 void
-sl_init_gc()
+sl_init_gc(struct sl_interpreter_state *state)
 {
-        heap = (struct sl_heap *)sl_native_malloc(sizeof(struct sl_heap));
+        struct sl_heap *heap;
+        state->heap = heap = (struct sl_heap *)sl_native_malloc(sizeof(struct sl_heap));
 
         heap->capacity = INITIAL_HEAP_CAPACITY;
         heap->size = 0;

@@ -171,7 +171,7 @@ parse_token(struct sl_interpreter_state *state, char *token)
 }
 
 static sl_value
-read_integer(struct sl_reader *reader)
+read_integer(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         char *token;
         sl_value number;
@@ -181,7 +181,7 @@ read_integer(struct sl_reader *reader)
                         advance_one(reader);
                 } else if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
                         token = get_token(reader);
-                        number = sl_integer_new(strtol(token, NULL, 10));
+                        number = sl_integer_new(state, strtol(token, NULL, 10));
                         free(token);
                         return number;
                 } else {
@@ -214,7 +214,7 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
 
 
                 if (next_char_is_digit(reader)) {
-                        return read_integer(reader);
+                        return read_integer(state, reader);
                 }
 
                 ch = peek(reader);
@@ -260,7 +260,7 @@ read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 
                                 new_list = val;
                                 while (sl_empty(list) != sl_true) {
-                                        new_list = sl_list_new(sl_first(list), new_list);
+                                        new_list = sl_list_new(state, sl_first(list), new_list);
                                         list = sl_rest(list);
                                 }
 
@@ -279,10 +279,10 @@ read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
                  * checked for that already. */
                 assert(val != NULL);
 
-                list = sl_list_new(val, list);
+                list = sl_list_new(state, val, list);
         }
 
-        return sl_reverse(list);
+        return sl_reverse(state, list);
 }
 
 static sl_value
@@ -303,7 +303,7 @@ read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
 
         skip_one(reader); /* the closing quote */
 
-        str = sl_string_new(token);
+        str = sl_string_new(state, token);
 
         free(token);
 
@@ -313,8 +313,8 @@ read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
 static sl_value
 read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
-        sl_value list = sl_list_new(read(state, reader), sl_empty_list);
-        return sl_list_new(sl_intern(state, "quote"), list);
+        sl_value list = sl_list_new(state, read(state, reader), sl_empty_list);
+        return sl_list_new(state, sl_intern(state, "quote"), list);
 }
 
 sl_value
@@ -328,7 +328,7 @@ sl_read(struct sl_interpreter_state *state, char *input)
 }
 
 void
-sl_init_reader()
+sl_init_reader(struct sl_interpreter_state *state)
 {
         memzero(reader_macros, 256 * sizeof(reader_macro));
 

@@ -70,22 +70,12 @@ extern sl_value sl_tBoolean;
 extern sl_value sl_tList;
 extern sl_value sl_tString;
 
-sl_value sl_type_new(sl_value name);
-sl_value sl_type(sl_value object);
-
-/* inspection */
-sl_value sl_type_inspect(sl_value type);
-sl_value sl_integer_inspect(sl_value integer);
-sl_value sl_symbol_inspect(sl_value symbol);
-sl_value sl_boolean_inspect(sl_value boolean);
-sl_value sl_list_inspect(sl_value list);
-sl_value sl_string_inspect(sl_value string);
-
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
 
 struct sl_interpreter_state {
         khash_t(str) *symbol_table;
+        struct sl_heap *heap;
 };
 
 struct sl_interpreter_state *sl_init();
@@ -96,6 +86,19 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
 
 /* util functions */
 void * memzero(void *p, size_t length);
+
+
+
+sl_value sl_type_new(struct sl_interpreter_state *state, sl_value name);
+sl_value sl_type(sl_value object);
+
+/* inspection */
+sl_value sl_type_inspect(struct sl_interpreter_state *state, sl_value type);
+sl_value sl_integer_inspect(struct sl_interpreter_state *state, sl_value integer);
+sl_value sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol);
+sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean);
+sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
 
 /* eval */
 sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);
@@ -112,22 +115,21 @@ struct sl_heap
         size_t size;
 };
 
-size_t sl_gc_heap_size();
-void sl_gc_run();
-sl_value sl_gc_alloc(size_t size);
+size_t sl_gc_heap_size(struct sl_interpreter_state *state);
+void sl_gc_run(struct sl_interpreter_state *state);
+sl_value sl_gc_alloc(struct sl_interpreter_state *state, size_t size);
 void * sl_native_malloc(size_t size);
 
-#define sl_alloc(type) sl_gc_alloc(sizeof(type))
 #define sl_dealloc(value) free(value)
 
 /* io */
-void sl_p(sl_value val);
+void sl_p(struct sl_interpreter_state *state, sl_value val);
 
 /* reader */
 sl_value sl_read(struct sl_interpreter_state *state, char *input);
 
 /* numbers */
-sl_value sl_integer_new(int i);
+sl_value sl_integer_new(struct sl_interpreter_state *state, int i);
 
 #define NUM2INT(n) SL_INTEGER(n)->value
 
@@ -141,17 +143,17 @@ extern sl_value sl_false;
 /* lists */
 extern sl_value sl_empty_list;
 
-sl_value sl_list_new(sl_value first, sl_value rest);
-sl_value sl_size(sl_value list);
+sl_value sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest);
+sl_value sl_size(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_first(sl_value list);
 sl_value sl_rest(sl_value list);
-sl_value sl_reverse(sl_value list);
+sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(sl_value list);
-sl_value sl_list_join(sl_value strings, sl_value seperator);
+sl_value sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value seperator);
 
 /* strings */
 char *sl_string_cstring(sl_value string);
 
-sl_value sl_string_new(char *value);
-sl_value sl_inspect(sl_value val);
-sl_value sl_string_concat(sl_value s1, sl_value s2);
+sl_value sl_string_new(struct sl_interpreter_state *state, char *value);
+sl_value sl_inspect(struct sl_interpreter_state *state, sl_value val);
+sl_value sl_string_concat(struct sl_interpreter_state *state, sl_value s1, sl_value s2);

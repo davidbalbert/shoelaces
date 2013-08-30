@@ -19,7 +19,7 @@ void test_read_integer()
         struct sl_interpreter_state *state = sl_init();
 
         sl_value a = sl_read(state, "1");
-        sl_value b = sl_integer_new(1);
+        sl_value b = sl_integer_new(state, 1);
 
         assert(sl_type(a) == sl_tInteger);
         assert(NUM2INT(a) == NUM2INT(b));
@@ -64,7 +64,7 @@ void test_read_string()
         sl_value str = sl_read(state, "\"Hello, world!\"");
 
         assert(sl_type(str) == sl_tString);
-        assert(NUM2INT(sl_size(str)) == strlen("Hello, world!"));
+        assert(NUM2INT(sl_size(state, str)) == strlen("Hello, world!"));
         assert(strcmp(sl_string_cstring(str), "Hello, world!") == 0);
 
         sl_destroy(state);
@@ -90,7 +90,7 @@ void test_read_list()
         sl_value v;
 
         assert(sl_type(list) == sl_tList);
-        assert(NUM2INT(sl_size(list)) == 4);
+        assert(NUM2INT(sl_size(state, list)) == 4);
 
         assert(sl_type(sl_first(list)) == sl_tInteger);
         assert(NUM2INT(sl_first(list)) == 123);
@@ -113,13 +113,13 @@ void test_read_nested_list()
         sl_value list = sl_read(state, "(a (b c) d)");
 
         assert(sl_type(list) == sl_tList);
-        assert(NUM2INT(sl_size(list)) == 3);
+        assert(NUM2INT(sl_size(state, list)) == 3);
 
         assert(sl_first(list) == sl_intern(state, "a"));
 
         sl_value nested_list = sl_first(sl_rest(list));
         assert(sl_type(nested_list) == sl_tList);
-        assert(NUM2INT(sl_size(nested_list)) == 2);
+        assert(NUM2INT(sl_size(state, nested_list)) == 2);
         assert(sl_first(nested_list) == sl_intern(state, "b"));
         assert(sl_first(sl_rest(nested_list)) == sl_intern(state, "c"));
 
@@ -181,18 +181,18 @@ test_gc()
         struct sl_interpreter_state *state = sl_init();
         size_t old_object_count;
 
-        old_object_count = sl_gc_heap_size();
+        old_object_count = sl_gc_heap_size(state);
 
         for (int i = 0; i < 12345; i++) {
-                sl_string_new("hello, world");
+                sl_string_new(state, "hello, world");
         }
 
-        sl_gc_run();
+        sl_gc_run(state);
 
         /* less than old object_count because there are some things
          * that aren't currently part of the root set. Namely, (),
          * true, and false */
-        assert(sl_gc_heap_size() == old_object_count - 3);
+        assert(sl_gc_heap_size(state) == old_object_count - 3);
 
         sl_destroy(state);
 }
