@@ -21,6 +21,16 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
         kh_value(state->symbol_table, iter) = value;
 }
 
+void sl_init_type();
+void sl_init_symbol();
+void sl_init_number();
+void sl_init_boolean();
+void sl_init_list();
+void sl_init_string();
+void sl_init_reader();
+void sl_init_gc();
+void sl_fix_type_names();
+
 struct sl_interpreter_state *sl_init()
 {
         struct sl_interpreter_state *state = sl_native_malloc(sizeof(struct sl_interpreter_state));
