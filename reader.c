@@ -327,7 +327,8 @@ sl_read(struct sl_interpreter_state *state, char *input)
         return val;
 }
 
-void sl_init_reader()
+void
+sl_init_reader()
 {
         memzero(reader_macros, 256 * sizeof(reader_macro));
 
