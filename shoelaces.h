@@ -95,7 +95,7 @@ sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
 
 /* util functions */
-void *memzero(void *p, size_t length);
+void * memzero(void *p, size_t length);
 
 /* eval */
 sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);
@@ -103,7 +103,7 @@ sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_val
 /* variable bindings */
 sl_value sl_env_get(struct sl_interpreter_state *state, sl_value name);
 
-/* gc - haha */
+/* gc */
 
 struct sl_heap
 {
