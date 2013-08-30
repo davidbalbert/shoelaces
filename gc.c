@@ -98,7 +98,7 @@ sweep_all(struct sl_interpreter_state *state)
 
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i] && !marked(heap->slots[i])) {
-                        sl_dealloc(heap->slots[i]);
+                        sl_dealloc(state, heap->slots[i]);
                         heap->slots[i] = NULL;
                         heap->size--;
                 }
@@ -129,6 +129,18 @@ sl_gc_alloc(struct sl_interpreter_state *state, size_t size)
         state->heap->size++;
 
         return *slot;
+}
+
+void
+sl_dealloc(struct sl_interpreter_state *state, sl_value value)
+{
+        sl_value type = sl_type(value);
+
+        if (type == state->tString) {
+                free(SL_STRING(value)->value);
+        }
+
+        free(value);
 }
 
 static sl_value *

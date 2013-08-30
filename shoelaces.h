@@ -91,8 +91,7 @@ void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_valu
 /* util functions */
 void * memzero(void *p, size_t length);
 
-
-
+/* more types */
 sl_value sl_type_new(struct sl_interpreter_state *state, sl_value name);
 sl_value sl_type(sl_value object);
 
@@ -123,8 +122,7 @@ size_t sl_gc_heap_size(struct sl_interpreter_state *state);
 void sl_gc_run(struct sl_interpreter_state *state);
 sl_value sl_gc_alloc(struct sl_interpreter_state *state, size_t size);
 void * sl_native_malloc(size_t size);
-
-#define sl_dealloc(value) free(value)
+void sl_dealloc(struct sl_interpreter_state *state, sl_value value);
 
 /* io */
 void sl_p(struct sl_interpreter_state *state, sl_value val);
