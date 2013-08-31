@@ -38,15 +38,26 @@ sl_gc_run(struct sl_interpreter_state *state)
 static void
 get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count)
 {
-        *roots = (sl_value *)sl_native_malloc(6 * sizeof(sl_value));
-        (*roots)[0] = state->tType;
-        (*roots)[1] = state->tSymbol;
-        (*roots)[2] = state->tInteger;
-        (*roots)[3] = state->tBoolean;
-        (*roots)[4] = state->tList;
-        (*roots)[5] = state->tString;
+        size_t count = 3 + sl_symbol_table_size(state);
+        *roots = (sl_value *)sl_native_malloc(count * sizeof(sl_value));
+        (*roots)[0] = state->global_env;
+        (*roots)[1] = state->sl_true;
+        (*roots)[2] = state->sl_false;
 
-        *roots_count = 6;
+        khash_t(str) *symbol_table = state->symbol_table;
+        khiter_t iter;
+        int i = 3;
+
+
+        for (iter = kh_begin(symbol_table); iter != kh_end(symbol_table); ++iter) {
+                if (kh_exist(symbol_table, iter)) {
+                        (*roots)[i] = kh_value(symbol_table, iter);
+                        i++;
+                }
+        }
+
+        assert(i == count);
+        *roots_count = count;
 }
 
 /*

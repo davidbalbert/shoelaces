@@ -1,7 +1,8 @@
 #include "shoelaces.h"
 #include "internal.h"
 
-sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
+sl_value
+sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
 {
         khiter_t iter;
 
@@ -14,12 +15,19 @@ sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
         }
 }
 
-void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value)
+void
+sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value)
 {
         int ret;
         khiter_t iter;
         iter = kh_put(str, state->symbol_table, name, &ret);
         kh_value(state->symbol_table, iter) = value;
+}
+
+size_t
+sl_symbol_table_size(struct sl_interpreter_state *state)
+{
+        return kh_size(state->symbol_table);
 }
 
 void sl_init_type(struct sl_interpreter_state *state);

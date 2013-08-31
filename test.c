@@ -166,6 +166,9 @@ test_gc()
         struct sl_interpreter_state *state = sl_init();
         size_t old_object_count;
 
+        /* run gc to get rid of any intermediate objects created during boot */
+        sl_gc_run(state);
+
         old_object_count = sl_gc_heap_size(state);
 
         for (int i = 0; i < 12345; i++) {
@@ -174,11 +177,7 @@ test_gc()
 
         sl_gc_run(state);
 
-        /* less than old object_count because there are some things
-         * that aren't currently part of the root set. Namely, (),
-         * true, and false */
-
-        assert(sl_gc_heap_size(state) < old_object_count);
+        assert(sl_gc_heap_size(state) == old_object_count);
 
         sl_destroy(state);
 }

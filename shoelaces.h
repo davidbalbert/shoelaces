@@ -89,6 +89,7 @@ void sl_destroy(struct sl_interpreter_state *state);
 
 sl_value sl_symbol_table_get(struct sl_interpreter_state *state, char *name);
 void sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value);
+size_t sl_symbol_table_size(struct sl_interpreter_state *state);
 
 /* util functions */
 void * memzero(void *p, size_t length);
