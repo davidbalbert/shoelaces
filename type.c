@@ -23,7 +23,9 @@ sl_type_inspect(struct sl_interpreter_state *state, sl_value type)
 {
         assert(sl_type(type) == state->tType);
 
-        return SL_TYPE(type)->name;
+        sl_value name = sl_string_concat(state, sl_string_new(state, "#<Type: "), SL_TYPE(type)->name);
+        name = sl_string_concat(state, name, sl_string_new(state, ">"));
+        return name;
 }
 
 /* for bootstrapping the type system */
