@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 static sl_value
 sl_alloc_list(struct sl_interpreter_state *state, sl_value first, sl_value rest, size_t size)
@@ -118,9 +119,56 @@ sl_empty(struct sl_interpreter_state *state, sl_value list)
                 return state->sl_false;
 }
 
+/* association lists */
+/* TODO: define these in lisp eventually */
+
+sl_value
+sl_alist_has_key(struct sl_interpreter_state *state, sl_value alist, sl_value key)
+{
+        if (sl_empty(state, alist) == state->sl_true) {
+                return state->sl_false;
+        } else if (sl_equals(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
+                return state->sl_true;
+        } else {
+                return sl_alist_has_key(state, sl_rest(state, alist), key);
+        }
+}
+
+sl_value
+sl_alist_get(struct sl_interpreter_state *state, sl_value alist, sl_value key)
+{
+        if (sl_empty(state, alist) == state->sl_true) {
+                /* TODO: raise exception instead of dying */
+                fprintf(stderr, "Error: alist does not contain %s\n", sl_string_cstring(state, sl_inspect(state, key)));
+                abort();
+        } else if (sl_equals(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
+                return sl_first(state, sl_rest(state, sl_first(state, alist)));
+        } else {
+                return sl_alist_get(state, sl_rest(state, alist), key);
+        }
+}
+
+sl_value
+sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, sl_value value)
+{
+        if (sl_alist_has_key(state, alist, key) == state->sl_true) {
+                fprintf(stderr, "Error: alist already contains key `%s'\n", sl_string_cstring(state, sl_inspect(state, key)));
+                abort();
+        }
+
+        sl_value pair = sl_list_new(state, key, sl_list_new(state, value, state->sl_empty_list));
+
+        return sl_list_new(state, pair, alist);
+}
+
+
+/* Hack for setting up List type before putting it in the
+ * environment */
+sl_value sl_type_new_without_def(struct sl_interpreter_state *state, sl_value name);
+
 void
 sl_init_list(struct sl_interpreter_state *state)
 {
-        state->tList = sl_type_new(state, sl_string_new(state, "List"));
+        state->tList = boot_type_new(state, sl_string_new(state, "List"));
         state->sl_empty_list = sl_empty_list_new(state);
 }

@@ -70,6 +70,8 @@ struct sl_interpreter_state {
         khash_t(str) *symbol_table;
         struct sl_heap *heap;
 
+        sl_value global_env;
+
         sl_value tType;
         sl_value tSymbol;
         sl_value tInteger;
@@ -103,11 +105,12 @@ sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean
 sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
 
+/* equality */
+sl_value sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b);
+
 /* eval */
 sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);
-
-/* variable bindings */
-sl_value sl_env_get(struct sl_interpreter_state *state, sl_value name);
+sl_value sl_def(struct sl_interpreter_state *state, sl_value name, sl_value value);
 
 /* gc */
 
@@ -132,11 +135,11 @@ sl_value sl_read(struct sl_interpreter_state *state, char *input);
 
 /* numbers */
 sl_value sl_integer_new(struct sl_interpreter_state *state, int i);
-
-#define NUM2INT(n) SL_INTEGER(n)->value
+long NUM2INT(sl_value n);
 
 /* symbols */
 sl_value sl_intern(struct sl_interpreter_state *state, char *name);
+sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
 
 /* lists */
 
@@ -147,6 +150,12 @@ sl_value sl_rest(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value seperator);
+
+/* association lists */
+
+sl_value sl_alist_has_key(struct sl_interpreter_state *state, sl_value alist, sl_value key);
+sl_value sl_alist_get(struct sl_interpreter_state *state, sl_value alist, sl_value key);
+sl_value sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, sl_value value);
 
 /* strings */
 char *sl_string_cstring(struct sl_interpreter_state *state, sl_value string);

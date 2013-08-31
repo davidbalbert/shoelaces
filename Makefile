@@ -12,27 +12,27 @@ test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io
 
 test.o: test.c shoelaces.h
 
-type.o: type.c shoelaces.h
+type.o: type.c shoelaces.h internal.h
 
-reader.o: reader.c shoelaces.h
+reader.o: reader.c shoelaces.h internal.h
 
-number.o: number.c shoelaces.h
+number.o: number.c shoelaces.h internal.h
 
-symbol.o: symbol.c shoelaces.h
+symbol.o: symbol.c shoelaces.h internal.h
 
-eval.o: eval.c shoelaces.h
+eval.o: eval.c shoelaces.h internal.h
 
-boolean.o: boolean.c shoelaces.h
+boolean.o: boolean.c shoelaces.h internal.h
 
-list.o: list.c shoelaces.h
+list.o: list.c shoelaces.h internal.h
 
-util.o: util.c shoelaces.h
+util.o: util.c shoelaces.h internal.h
 
-io.o: io.c shoelaces.h
+io.o: io.c shoelaces.h internal.h
 
-string.o: string.c shoelaces.h
+string.o: string.c shoelaces.h internal.h
 
-gc.o: gc.c shoelaces.h
+gc.o: gc.c shoelaces.h internal.h
 
 shoelaces.h: khash.h
 

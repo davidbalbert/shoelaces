@@ -160,21 +160,6 @@ void test_read_dotted_pair()
         sl_destroy(state);
 }
 
-/*
-void test_eval_type()
-{
-        struct sl_interpreter_state *state = sl_init();
-
-        sl_value in = sl_read(state, "Type");
-
-        sl_value out = sl_eval(state, in, NULL);
-
-        assert(out == state->tType);
-
-        sl_destroy(state);
-}
-*/
-
 void
 test_gc()
 {
@@ -192,7 +177,22 @@ test_gc()
         /* less than old object_count because there are some things
          * that aren't currently part of the root set. Namely, (),
          * true, and false */
-        assert(sl_gc_heap_size(state) == old_object_count - 3);
+
+        assert(sl_gc_heap_size(state) < old_object_count);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_type()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "Type");
+
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(out == state->tType);
 
         sl_destroy(state);
 }
@@ -212,9 +212,10 @@ main(int argc, char *argv[])
         test_read_quote();
         test_read_dotted_pair();
 
-        //test_eval_type();
-
         test_gc();
+
+        test_eval_type();
+
 
         printf("Tests passed!\n");
         return 0;

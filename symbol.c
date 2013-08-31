@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 static sl_value new_symbol(struct sl_interpreter_state *state, sl_value name);
 
@@ -13,6 +14,14 @@ sl_intern(struct sl_interpreter_state *state, char *name)
                 sl_symbol_table_put(state, name, sym);
                 return sym;
         }
+}
+
+sl_value
+sl_intern_string(struct sl_interpreter_state *state, sl_value string)
+{
+        assert(sl_type(string) == state->tString);
+
+        return sl_intern(state, sl_string_cstring(state, string));
 }
 
 static
@@ -34,5 +43,5 @@ sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol)
 void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
-        state->tSymbol = sl_type_new(state, sl_string_new(state, "Symbol"));
+        state->tSymbol = boot_type_new(state, sl_string_new(state, "Symbol"));
 }

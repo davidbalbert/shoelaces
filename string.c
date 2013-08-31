@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 sl_value
 sl_string_new(struct sl_interpreter_state *state, char *value)
@@ -63,5 +64,5 @@ sl_string_inspect(struct sl_interpreter_state *state, sl_value string)
 void
 sl_init_string(struct sl_interpreter_state *state)
 {
-        state->tString = sl_type_new(state, sl_string_new(state, "String"));
+        state->tString = boot_type_new(state, sl_string_new(state, "String"));
 }

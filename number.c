@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 sl_value
 sl_integer_new(struct sl_interpreter_state *state, int i)
@@ -21,8 +22,14 @@ sl_integer_inspect(struct sl_interpreter_state *state, sl_value integer)
         return sl_string_new(state, inspect_str);
 }
 
+long
+NUM2INT(sl_value n)
+{
+        return SL_INTEGER(n)->value;
+}
+
 void
 sl_init_number(struct sl_interpreter_state *state)
 {
-        state->tInteger = sl_type_new(state, sl_string_new(state, "Integer"));
+        state->tInteger = boot_type_new(state, sl_string_new(state, "Integer"));
 }
