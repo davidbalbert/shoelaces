@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-g -Wall -std=c99
 
-shoelaces: shoelaces.c
+shoestrap: shoestrap.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o
 
 run-tests: test
 	./test
@@ -9,6 +9,8 @@ run-tests: test
 .PHONY: run-tests
 
 test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o
+
+shoestrap.o: shoestrap.c shoelaces.h
 
 test.o: test.c shoelaces.h
 
@@ -39,6 +41,6 @@ func.o: func.c shoelaces.h internal.h
 shoelaces.h: khash.h
 
 clean:
-	rm -rf *.o *.dSYM shoelaces test
+	rm -rf *.o *.dSYM shoestrap test
 
 .PHONY: clean
