@@ -293,6 +293,19 @@ test_eval_if()
         sl_destroy(state);
 }
 
+void
+test_eval_empty_list()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "()");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(out == state->sl_empty_list);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -317,6 +330,7 @@ main(int argc, char *argv[])
         test_eval_def();
         test_eval_quote();
         test_eval_if();
+        test_eval_empty_list();
 
         printf("Tests passed!\n");
         return 0;

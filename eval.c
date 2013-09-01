@@ -118,9 +118,9 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                         fprintf(stderr, "Error: `%s' is undefined\n", sl_string_cstring(state, sl_inspect(state, expression)));
                         abort();
                 }
-        } else if (sl_type(expression) == state->tString ||
-                   sl_type(expression) == state->tInteger ||
-                   sl_type(expression) == state->tBoolean) {
+        } else if (sl_type(expression) != state->tList) {
+                return expression;
+        } else if (sl_empty(state, expression) == state->sl_true) {
                 return expression;
         } else if (sl_type(expression) == state->tList &&
                    sl_type(sl_first(state, expression)) == state->tSymbol) {
