@@ -44,4 +44,7 @@ void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
         state->tSymbol = boot_type_new(state, sl_string_new(state, "Symbol"));
+
+        state->s_def = sl_intern(state, "def");
+        state->s_quote = sl_intern(state, "quote");
 }

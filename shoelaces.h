@@ -82,6 +82,9 @@ struct sl_interpreter_state {
         sl_value sl_true;
         sl_value sl_false;
         sl_value sl_empty_list;
+
+        sl_value s_def;
+        sl_value s_quote;
 };
 
 struct sl_interpreter_state *sl_init();

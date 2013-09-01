@@ -257,6 +257,19 @@ test_eval_def()
         sl_destroy(state);
 }
 
+void
+test_eval_quote()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "'foo");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "foo") == out);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -279,6 +292,7 @@ main(int argc, char *argv[])
         test_eval_string();
         test_eval_boolean();
         test_eval_def();
+        test_eval_quote();
 
         printf("Tests passed!\n");
         return 0;

@@ -126,12 +126,16 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                    sl_type(sl_first(state, expression)) == state->tSymbol) {
                 sl_value first = sl_first(state, expression);
 
-                if (sl_intern(state, "def") == first) {
+                if (state->s_def == first) {
                         assert(NUM2INT(sl_size(state, expression)) == 3);
 
                         sl_value second = sl_second(state, expression);
                         sl_value third = sl_third(state, expression);
                         return sl_def(state, second, sl_eval(state, third, environment));
+                } else if(state->s_quote == first) {
+                        assert(NUM2INT(sl_size(state, expression)) == 2);
+
+                        return sl_second(state, expression);
                 } else {
                         fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
                         abort();
