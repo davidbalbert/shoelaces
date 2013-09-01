@@ -48,7 +48,6 @@ get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_co
         khiter_t iter;
         int i = 3;
 
-
         for (iter = kh_begin(symbol_table); iter != kh_end(symbol_table); ++iter) {
                 if (kh_exist(symbol_table, iter)) {
                         (*roots)[i] = kh_value(symbol_table, iter);
@@ -152,6 +151,22 @@ sl_dealloc(struct sl_interpreter_state *state, sl_value value)
         }
 
         free(value);
+}
+
+void
+sl_gc_free_all(struct sl_interpreter_state *state)
+{
+        struct sl_heap *heap = state->heap;
+
+        for (size_t i = 0; i < heap->capacity; i++) {
+                if (heap->slots[i]) {
+                        sl_dealloc(state, heap->slots[i]);
+                        heap->slots[i] = NULL;
+                        heap->size--;
+                }
+        }
+
+        assert(heap->size == 0);
 }
 
 static sl_value *

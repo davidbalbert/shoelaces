@@ -77,6 +77,18 @@ sl_first(struct sl_interpreter_state *state, sl_value list)
 }
 
 sl_value
+sl_second(struct sl_interpreter_state *state, sl_value list)
+{
+        return sl_first(state, sl_rest(state, list));
+}
+
+sl_value
+sl_third(struct sl_interpreter_state *state, sl_value list)
+{
+        return sl_first(state, sl_rest(state, sl_rest(state, list)));
+}
+
+sl_value
 sl_rest(struct sl_interpreter_state *state, sl_value list)
 {
         assert(sl_type(list) == state->tList);

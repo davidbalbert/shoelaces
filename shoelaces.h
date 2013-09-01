@@ -147,6 +147,8 @@ sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
 sl_value sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest);
 sl_value sl_size(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_first(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_second(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_third(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_rest(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);

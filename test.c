@@ -188,10 +188,71 @@ test_eval_type()
         struct sl_interpreter_state *state = sl_init();
 
         sl_value in = sl_read(state, "Type");
-
         sl_value out = sl_eval(state, in, state->global_env);
 
         assert(out == state->tType);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_number()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "100");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(NUM2INT(out) == 100);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_string()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "\"hello, world\"");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_equals(state, out, sl_string_new(state, "hello, world")) == state->sl_true);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_boolean()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "true");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(out == state->sl_true);
+
+        in = sl_read(state, "false");
+        out = sl_eval(state, in, state->global_env);
+
+        assert(out == state->sl_false);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_def()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "(def foo 42)");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(NUM2INT(out) == 42);
+
+        in = sl_read(state, "foo");
+        out = sl_eval(state, in, state->global_env);
+
+        assert(NUM2INT(out) == 42);
 
         sl_destroy(state);
 }
@@ -214,7 +275,10 @@ main(int argc, char *argv[])
         test_gc();
 
         test_eval_type();
-
+        test_eval_number();
+        test_eval_string();
+        test_eval_boolean();
+        test_eval_def();
 
         printf("Tests passed!\n");
         return 0;

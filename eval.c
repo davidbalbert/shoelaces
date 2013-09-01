@@ -92,6 +92,7 @@ void
 sl_destroy(struct sl_interpreter_state *state)
 {
         kh_destroy(str, state->symbol_table);
+        sl_gc_free_all(state);
         free(state);
 }
 
@@ -117,9 +118,27 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                         fprintf(stderr, "Error: `%s' is undefined\n", sl_string_cstring(state, sl_inspect(state, expression)));
                         abort();
                 }
+        } else if (sl_type(expression) == state->tString ||
+                   sl_type(expression) == state->tInteger ||
+                   sl_type(expression) == state->tBoolean) {
+                return expression;
+        } else if (sl_type(expression) == state->tList &&
+                   sl_type(sl_first(state, expression)) == state->tSymbol) {
+                sl_value first = sl_first(state, expression);
+
+                if (sl_intern(state, "def") == first) {
+                        assert(NUM2INT(sl_size(state, expression)) == 3);
+
+                        sl_value second = sl_second(state, expression);
+                        sl_value third = sl_third(state, expression);
+                        return sl_def(state, second, sl_eval(state, third, environment));
+                } else {
+                        fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
+                        abort();
+                }
         } else {
-                assert(0);
-                return state->sl_false;
+                fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
+                abort();
         }
 }
 
