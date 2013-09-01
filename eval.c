@@ -132,10 +132,21 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                         sl_value second = sl_second(state, expression);
                         sl_value third = sl_third(state, expression);
                         return sl_def(state, second, sl_eval(state, third, environment));
-                } else if(state->s_quote == first) {
+                } else if (state->s_quote == first) {
                         assert(NUM2INT(sl_size(state, expression)) == 2);
 
                         return sl_second(state, expression);
+                } else if (state->s_if == first) {
+                        assert(NUM2INT(sl_size(state, expression)) == 4);
+
+                        sl_value rest = sl_rest(state, expression);
+                        sl_value result = sl_eval(state, sl_first(state, rest), environment);
+
+                        if (result == state->sl_false) {
+                                return sl_eval(state, sl_third(state, rest), environment);
+                        } else {
+                                return sl_eval(state, sl_second(state, rest), environment);
+                        }
                 } else {
                         fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
                         abort();

@@ -47,4 +47,5 @@ sl_init_symbol(struct sl_interpreter_state *state)
 
         state->s_def = sl_intern(state, "def");
         state->s_quote = sl_intern(state, "quote");
+        state->s_if = sl_intern(state, "if");
 }

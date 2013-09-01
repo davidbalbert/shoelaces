@@ -270,6 +270,29 @@ test_eval_quote()
         sl_destroy(state);
 }
 
+void
+test_eval_if()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "(if true 'yay 'boo)");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "yay") == out);
+
+        in = sl_read(state, "(if 1000 'yay 'boo)");
+        out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "yay") == out);
+
+        in = sl_read(state, "(if false 'yay 'boo)");
+        out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "boo") == out);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -293,6 +316,7 @@ main(int argc, char *argv[])
         test_eval_boolean();
         test_eval_def();
         test_eval_quote();
+        test_eval_if();
 
         printf("Tests passed!\n");
         return 0;
