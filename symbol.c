@@ -40,11 +40,22 @@ sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol)
         return SL_SYMBOL(symbol)->name;
 }
 
+
+/* NOTE: This function is needed so that all required types can be set up
+ * before we start adding things to the environment. If in doubt, you should
+ * put your Symbol initialization code into sl_init_symbol. */
+
+/* NOTE: Don't call sl_define_function in boot_symbol. Sl_define_function
+ * expects the environment to be set up. */
+void
+boot_symbol(struct sl_interpreter_state *state)
+{
+        state->tSymbol = boot_type_new(state, sl_string_new(state, "Symbol"));
+}
+
 void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
-        state->tSymbol = boot_type_new(state, sl_string_new(state, "Symbol"));
-
         state->s_def = sl_intern(state, "def");
         state->s_quote = sl_intern(state, "quote");
         state->s_if = sl_intern(state, "if");

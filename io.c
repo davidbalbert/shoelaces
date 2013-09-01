@@ -33,6 +33,8 @@ sl_inspect(struct sl_interpreter_state *state, sl_value val)
                 str = sl_list_inspect(state, val);
         } else if (state->tString == type) {
                 str = sl_string_inspect(state, val);
+        } else if (state->tFunction == type) {
+                str = sl_function_inspect(state, val);
         } else {
                 str = generic_inspect(state, val);
         }

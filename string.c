@@ -61,8 +61,20 @@ sl_string_inspect(struct sl_interpreter_state *state, sl_value string)
         return s;
 }
 
+
+/* NOTE: This function is needed so that all required types can be set up
+ * before we start adding things to the environment. If in doubt, you should
+ * put your String initialization code into sl_init_string. */
+
+/* NOTE: Don't call sl_define_function in boot_string. Sl_define_function
+ * expects the environment to be set up. */
+void
+boot_string(struct sl_interpreter_state *state)
+{
+        state->tString = boot_type_new(state, sl_string_new(state, "String"));
+}
+
 void
 sl_init_string(struct sl_interpreter_state *state)
 {
-        state->tString = boot_type_new(state, sl_string_new(state, "String"));
 }

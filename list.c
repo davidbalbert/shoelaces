@@ -69,6 +69,22 @@ sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest)
         return sl_alloc_list(state, first, rest, new_size);
 }
 
+sl_value sl_list(struct sl_interpreter_state *state, size_t size, ...)
+{
+        va_list values;
+        va_start(values, size);
+
+        sl_value list = state->sl_empty_list;
+
+        for (int i = 0; i < size; i++) {
+                list = sl_list_new(state, va_arg(values, sl_value), list);
+        }
+
+        va_end(values);
+
+        return sl_reverse(state, list);
+}
+
 sl_value
 sl_first(struct sl_interpreter_state *state, sl_value list)
 {
@@ -86,6 +102,18 @@ sl_value
 sl_third(struct sl_interpreter_state *state, sl_value list)
 {
         return sl_first(state, sl_rest(state, sl_rest(state, list)));
+}
+
+sl_value
+sl_fourth(struct sl_interpreter_state *state, sl_value list)
+{
+        return sl_first(state, sl_rest(state, sl_rest(state, sl_rest(state, list))));
+}
+
+sl_value
+sl_fifth(struct sl_interpreter_state *state, sl_value list)
+{
+        return sl_first(state, sl_rest(state, sl_rest(state, sl_rest(state, sl_rest(state, list)))));
 }
 
 sl_value
@@ -174,13 +202,21 @@ sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, s
 }
 
 
-/* Hack for setting up List type before putting it in the
- * environment */
-sl_value sl_type_new_without_def(struct sl_interpreter_state *state, sl_value name);
+/* NOTE: This function is needed so that all required types can be set up
+ * before we start adding things to the environment. If in doubt, you should
+ * put your List initialization code into sl_init_list. */
+
+/* NOTE: Don't call sl_define_function in boot_list. Sl_define_function expects
+ * the environment to be set up. */
+void
+boot_list(struct sl_interpreter_state *state)
+{
+        state->tList = boot_type_new(state, sl_string_new(state, "List"));
+        state->sl_empty_list = sl_empty_list_new(state);
+}
 
 void
 sl_init_list(struct sl_interpreter_state *state)
 {
-        state->tList = boot_type_new(state, sl_string_new(state, "List"));
-        state->sl_empty_list = sl_empty_list_new(state);
+        sl_define_function(state, "first", sl_first, 1, sl_list(state, 1, state->tList));
 }

@@ -20,10 +20,21 @@ sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean)
                 return sl_string_new(state, "false");
 }
 
+/* NOTE: This function is needed so that all required types can be set up
+ * before we start adding things to the environment. If in doubt, you should
+ * put your Boolean initialization code into sl_init_boolean. */
+
+/* NOTE: Don't call sl_define_function in boot_boolean. Sl_define_function
+ * expects the environment to be set up. */
 void
-sl_init_boolean(struct sl_interpreter_state *state)
+boot_boolean(struct sl_interpreter_state *state)
 {
         state->tBoolean = boot_type_new(state, sl_string_new(state, "Boolean"));
         state->sl_true = new_boolean(state, 1);
         state->sl_false = new_boolean(state, 0);
+}
+
+void
+sl_init_boolean(struct sl_interpreter_state *state)
+{
 }

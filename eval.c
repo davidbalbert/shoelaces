@@ -30,15 +30,22 @@ sl_symbol_table_size(struct sl_interpreter_state *state)
         return kh_size(state->symbol_table);
 }
 
+void boot_type(struct sl_interpreter_state *state);
+void boot_string(struct sl_interpreter_state *state);
+void fix_type_names(struct sl_interpreter_state *state);
+void boot_list(struct sl_interpreter_state *state);
+void boot_symbol(struct sl_interpreter_state *state);
+void boot_boolean(struct sl_interpreter_state *state);
+
 void sl_init_type(struct sl_interpreter_state *state);
+void sl_init_string(struct sl_interpreter_state *state);
+void sl_init_list(struct sl_interpreter_state *state);
 void sl_init_symbol(struct sl_interpreter_state *state);
 void sl_init_number(struct sl_interpreter_state *state);
 void sl_init_boolean(struct sl_interpreter_state *state);
-void sl_init_list(struct sl_interpreter_state *state);
-void sl_init_string(struct sl_interpreter_state *state);
-void sl_init_reader(struct sl_interpreter_state *state);
+void sl_init_function(struct sl_interpreter_state *state);
 void sl_init_gc(struct sl_interpreter_state *state);
-void sl_fix_type_names(struct sl_interpreter_state *state);
+void sl_init_reader(struct sl_interpreter_state *state);
 
 struct sl_interpreter_state *
 sl_init()
@@ -50,10 +57,10 @@ sl_init()
 
         /* The order of these next three function calls is
          * important.  Because type names are strings, and
-         * sl_tString isn't set until after sl_init_string is
-         * called, the names of sl_tType and sl_tString both have
-         * their types pointed at something other than sl_tString.
-         * We fix this in sl_fix_type_names.
+         * state->tString isn't set until after boot_string is
+         * called, the names of state->tType and state->tString
+         * both have their types pointed at something other than
+         * state->tString.  We fix this in fix_type_names.
          *
          * An alternative approach (that the Ruby interpreter
          * takes) is making type names Symbols instead of strings.
@@ -65,25 +72,40 @@ sl_init()
          * rid of sl_fix_type_names. I may experiment with doing
          * that at some point in the future.
          */
-        sl_init_type(state);
-        sl_init_string(state);
-        sl_fix_type_names(state);
 
-        sl_init_list(state);
-        sl_init_symbol(state);
-        sl_init_number(state);
-        sl_init_boolean(state);
+        /* bootstrap types necessary for interpreter interals */
+        boot_type(state);
+        boot_string(state);
+        fix_type_names(state);
 
-        sl_init_reader(state);
+        boot_list(state);
+        boot_symbol(state);
+        boot_boolean(state);
 
+        /* set up global environment and add existing types to it */
         state->global_env = state->sl_empty_list;
 
         boot_def_type(state, state->tType);
         boot_def_type(state, state->tString);
         boot_def_type(state, state->tList);
         boot_def_type(state, state->tSymbol);
-        boot_def_type(state, state->tInteger);
         boot_def_type(state, state->tBoolean);
+
+        /* initialize functions (the rest of the initialization methods depend on this */
+        sl_init_function(state);
+
+        /* finish initialization of bootstrapped types */
+        sl_init_type(state);
+        sl_init_string(state);
+        sl_init_list(state);
+        sl_init_symbol(state);
+        sl_init_boolean(state);
+
+        /* initialize other types here */
+        sl_init_number(state);
+
+        /* initialize the reader */
+        sl_init_reader(state);
 
         return state;
 }
@@ -106,6 +128,20 @@ sl_value
 env_get(struct sl_interpreter_state *state, sl_value environment, sl_value name)
 {
         return sl_alist_get(state, environment, name);
+}
+
+sl_value
+eval_each(struct sl_interpreter_state *state, sl_value args, sl_value environment)
+{
+        assert(sl_type(args) == state->tList);
+
+        if (args == state->sl_empty_list) {
+                return state->sl_empty_list;
+        } else {
+                sl_value first = sl_first(state, args);
+                sl_value rest = sl_rest(state, args);
+                return sl_list_new(state, sl_eval(state, first, environment), rest);
+        }
 }
 
 sl_value
@@ -152,8 +188,14 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
 
                         return sl_eval(state, new_expression, environment);
                 }
+        } else if (sl_type(sl_first(state, expression)) == state->tFunction) {
+                sl_value f = sl_first(state, expression);
+                sl_value args = sl_rest(state, expression);
+
+                /* TODO: make eval_each a map and eval */
+                return sl_apply(state, f, eval_each(state, args, environment));
         } else {
-                fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
+                fprintf(stderr, "Error: %s is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
                 abort();
         }
 }
@@ -183,6 +225,18 @@ sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
                 return result == 0 ? state->sl_true : state->sl_false;
         } else if (type == state->tInteger) {
                 return NUM2INT(a) == NUM2INT(b) ? state->sl_true : state->sl_false;
+        } else if (type == state->tList) {
+                sl_value first_a = sl_first(state, a);
+                sl_value first_b = sl_first(state, b);
+
+                if (sl_equals(state, first_a, first_b) == state->sl_true) {
+                        sl_value rest_a = sl_rest(state, a);
+                        sl_value rest_b = sl_rest(state, b);
+
+                        return sl_equals(state, rest_a, rest_b);
+                } else {
+                        return state->sl_false;
+                }
         }
 
         return state->sl_false;

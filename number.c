@@ -31,5 +31,5 @@ NUM2INT(sl_value n)
 void
 sl_init_number(struct sl_interpreter_state *state)
 {
-        state->tInteger = boot_type_new(state, sl_string_new(state, "Integer"));
+        state->tInteger = sl_type_new(state, sl_string_new(state, "Integer"));
 }

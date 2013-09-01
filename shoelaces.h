@@ -19,13 +19,16 @@ struct SLBasic
 struct SLType
 {
         struct SLBasic basic;
-        sl_value name;
+
+        /* TODO: Change to Symbol? If you do this, you must also
+         * change fix_type_names */
+        sl_value name; /* String */
 };
 
 struct SLSymbol
 {
         struct SLBasic basic;
-        sl_value name;
+        sl_value name; /* String */
 };
 
 struct SLInteger
@@ -43,8 +46,8 @@ struct SLBoolean
 struct SLList
 {
         struct SLBasic basic;
-        sl_value first;
-        sl_value rest;
+        sl_value first; /* Any */
+        sl_value rest; /* Any */
         size_t size;
 };
 
@@ -55,13 +58,42 @@ struct SLString
         size_t size;
 };
 
-#define SL_BASIC(v)   ((struct SLBasic*)(v))
-#define SL_TYPE(v)    ((struct SLType*)(v))
-#define SL_SYMBOL(v)  ((struct SLSymbol*)(v))
-#define SL_INTEGER(v) ((struct SLInteger*)(v))
-#define SL_BOOLEAN(v) ((struct SLBoolean*)(v))
-#define SL_LIST(v)    ((struct SLList*)(v))
-#define SL_STRING(v)  ((struct SLString*)(v))
+struct SLFunction
+{
+        struct SLBasic basic;
+        sl_value name; /* Symbol */
+        sl_value methods; /* Association List */
+};
+
+struct sl_interpreter_state;
+
+typedef sl_value (*sl_cfunc_invoker)(struct sl_interpreter_state *state, sl_value method, sl_value argv);
+
+struct SLMethod
+{
+        struct SLBasic basic;
+        sl_value signature; /* List */
+        sl_value function; /* Function */
+
+        enum {
+                SL_METHOD_CFUNC,
+                SL_METHOD_LISP
+        } method_type;
+
+        /* For C functions */
+        sl_value (*cfunc_body)();
+        sl_cfunc_invoker invoker;
+};
+
+#define SL_BASIC(v)    ((struct SLBasic *)(v))
+#define SL_TYPE(v)     ((struct SLType *)(v))
+#define SL_SYMBOL(v)   ((struct SLSymbol *)(v))
+#define SL_INTEGER(v)  ((struct SLInteger *)(v))
+#define SL_BOOLEAN(v)  ((struct SLBoolean *)(v))
+#define SL_LIST(v)     ((struct SLList *)(v))
+#define SL_STRING(v)   ((struct SLString *)(v))
+#define SL_FUNCTION(v) ((struct SLFunction *)(v))
+#define SL_METHOD(v)   ((struct SLMethod *)(v))
 
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
@@ -78,6 +110,8 @@ struct sl_interpreter_state {
         sl_value tBoolean;
         sl_value tList;
         sl_value tString;
+        sl_value tFunction;
+        sl_value tMethod;
 
         sl_value sl_true;
         sl_value sl_false;
@@ -101,6 +135,7 @@ void * memzero(void *p, size_t length);
 /* more types */
 sl_value sl_type_new(struct sl_interpreter_state *state, sl_value name);
 sl_value sl_type(sl_value object);
+sl_value sl_types(struct sl_interpreter_state *state, sl_value values);
 
 /* inspection */
 sl_value sl_type_inspect(struct sl_interpreter_state *state, sl_value type);
@@ -109,6 +144,7 @@ sl_value sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol);
 sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean);
 sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
+sl_value sl_function_inspect(struct sl_interpreter_state *state, sl_value func);
 
 /* equality */
 sl_value sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b);
@@ -116,6 +152,10 @@ sl_value sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b);
 /* eval */
 sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);
 sl_value sl_def(struct sl_interpreter_state *state, sl_value name, sl_value value);
+
+/* functions */
+void sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), int arg_count, sl_value type_list);
+sl_value sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args);
 
 /* gc */
 
@@ -149,10 +189,13 @@ sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
 /* lists */
 
 sl_value sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest);
+sl_value sl_list(struct sl_interpreter_state *state, size_t size, ...);
 sl_value sl_size(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_first(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_second(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_third(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_fourth(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_fifth(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_rest(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);

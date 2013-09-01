@@ -67,6 +67,8 @@ get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_co
 static void
 mark(struct sl_interpreter_state *state, sl_value value)
 {
+        /* TODO: when we move to tagged values, we will have to
+         * check for value == Qundefined rather than !value */
         if (!value || marked(value)) {
                 return;
         }
@@ -86,6 +88,12 @@ mark(struct sl_interpreter_state *state, sl_value value)
         } else if (state->tList == type) {
                 mark(state, SL_LIST(value)->first);
                 mark(state, SL_LIST(value)->rest);
+        } else if (state->tFunction == type) {
+                mark(state, SL_FUNCTION(value)->name);
+                mark(state, SL_FUNCTION(value)->methods);
+        } else if (state->tMethod == type) {
+                mark(state, SL_METHOD(value)->signature);
+                mark(state, SL_METHOD(value)->function);
         }
 }
 
