@@ -122,8 +122,7 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                 return expression;
         } else if (sl_empty(state, expression) == state->sl_true) {
                 return expression;
-        } else if (sl_type(expression) == state->tList &&
-                   sl_type(sl_first(state, expression)) == state->tSymbol) {
+        } else if (sl_type(sl_first(state, expression)) == state->tSymbol) {
                 sl_value first = sl_first(state, expression);
 
                 if (state->s_def == first) {
@@ -148,8 +147,10 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                                 return sl_eval(state, sl_second(state, rest), environment);
                         }
                 } else {
-                        fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
-                        abort();
+                        sl_value f = sl_eval(state, first, environment);
+                        sl_value new_expression = sl_list_new(state, f, sl_rest(state, expression));
+
+                        return sl_eval(state, new_expression, environment);
                 }
         } else {
                 fprintf(stderr, "Error: `%s' is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));

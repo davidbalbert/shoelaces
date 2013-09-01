@@ -306,6 +306,32 @@ test_eval_empty_list()
         sl_destroy(state);
 }
 
+void
+test_eval_eval()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "(eval ''foo)");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "foo") == out);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_function_call()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "(first '(a b c))");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_intern(state, "a") == out);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -331,6 +357,9 @@ main(int argc, char *argv[])
         test_eval_quote();
         test_eval_if();
         test_eval_empty_list();
+
+        test_eval_function_call();
+        /*test_eval_eval();*/
 
         printf("Tests passed!\n");
         return 0;
