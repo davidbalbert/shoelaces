@@ -219,4 +219,5 @@ void
 sl_init_list(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "first", sl_first, 1, sl_list(state, 1, state->tList));
+        sl_define_function(state, "rest", sl_rest, 1, sl_list(state, 1, state->tList));
 }

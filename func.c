@@ -115,7 +115,7 @@ method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value
 {
         assert(sl_type(function) == state->tFunction);
 
-        /* TODO: Make type_list an array. Scaning it on invoke is order N^2 :( */
+        /* TODO: Make type_list an array. Scaning it on invoke is order N*M :( */
         assert(sl_type(type_list) == state->tList);
         assert(NUM2INT(sl_size(state, type_list)) == arg_count);
 
