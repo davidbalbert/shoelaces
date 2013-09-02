@@ -47,7 +47,7 @@ sl_types(struct sl_interpreter_state *state, sl_value values)
         } else {
                 sl_value first = sl_first(state, values);
                 sl_value rest = sl_rest(state, values);
-                return sl_list_new(state, sl_type(first), rest);
+                return sl_list_new(state, sl_type(first), sl_types(state, rest));
         }
 }
 
