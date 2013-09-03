@@ -5,7 +5,7 @@ generic_inspect(struct sl_interpreter_state *state, sl_value val)
 {
         sl_value type = sl_type(val);
         sl_value str;
-        char *inspect_string = sl_native_malloc((4 + NUM2INT(sl_size(state, SL_TYPE(type)->name))) * sizeof(char));
+        char *inspect_string = sl_native_malloc((4 + NUM2INT(sl_string_size(state, SL_TYPE(type)->name))) * sizeof(char));
 
         sprintf(inspect_string, "#<%s>", sl_string_cstring(state, SL_TYPE(type)->name));
 

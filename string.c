@@ -29,7 +29,7 @@ sl_string_concat(struct sl_interpreter_state *state, sl_value s1, sl_value s2)
                 s2 = sl_inspect(state, s2);
         }
 
-        size = NUM2INT(sl_size(state, s1)) + NUM2INT(sl_size(state, s2)) + 1;
+        size = NUM2INT(sl_string_size(state, s1)) + NUM2INT(sl_string_size(state, s2)) + 1;
         str = sl_native_malloc(size * sizeof(char));
 
         sprintf(str, "%s%s", sl_string_cstring(state, s1), sl_string_cstring(state, s2));
@@ -51,7 +51,7 @@ sl_value
 sl_string_inspect(struct sl_interpreter_state *state, sl_value string)
 {
         assert(sl_type(string) == state->tString);
-        char *str = sl_native_malloc((NUM2INT(sl_size(state, string)) + 1) * sizeof(char));
+        char *str = sl_native_malloc((NUM2INT(sl_string_size(state, string)) + 1) * sizeof(char));
         sl_value s;
 
         sprintf(str, "\"%s\"", sl_string_cstring(state, string));
@@ -59,6 +59,13 @@ sl_string_inspect(struct sl_interpreter_state *state, sl_value string)
         free(str);
 
         return s;
+}
+
+sl_value
+sl_string_size(struct sl_interpreter_state *state, sl_value string)
+{
+        assert(sl_type(string) == state->tString);
+        return sl_integer_new(state, SL_STRING(string)->size);
 }
 
 
@@ -77,4 +84,5 @@ boot_string(struct sl_interpreter_state *state)
 void
 sl_init_string(struct sl_interpreter_state *state)
 {
+        sl_define_function(state, "size", sl_string_size, 1, sl_list(state, 1, state->tString));
 }

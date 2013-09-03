@@ -117,7 +117,7 @@ method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value
 
         /* TODO: Make type_list an array. Scaning it on invoke is order N*M :( */
         assert(sl_type(type_list) == state->tList);
-        assert(NUM2INT(sl_size(state, type_list)) == arg_count);
+        assert(NUM2INT(sl_list_size(state, type_list)) == arg_count);
 
         sl_value m = sl_gc_alloc(state, sizeof(struct SLMethod));
         SL_BASIC(m)->type = state->tMethod;

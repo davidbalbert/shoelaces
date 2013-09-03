@@ -64,7 +64,7 @@ void test_read_string()
         sl_value str = sl_read(state, "\"Hello, world!\"");
 
         assert(sl_type(str) == state->tString);
-        assert(NUM2INT(sl_size(state, str)) == strlen("Hello, world!"));
+        assert(NUM2INT(sl_string_size(state, str)) == strlen("Hello, world!"));
         assert(strcmp(sl_string_cstring(state, str), "Hello, world!") == 0);
 
         sl_destroy(state);
@@ -90,7 +90,7 @@ void test_read_list()
         sl_value v;
 
         assert(sl_type(list) == state->tList);
-        assert(NUM2INT(sl_size(state, list)) == 4);
+        assert(NUM2INT(sl_list_size(state, list)) == 4);
 
         assert(sl_type(sl_first(state, list)) == state->tInteger);
         assert(NUM2INT(sl_first(state, list)) == 123);
@@ -113,13 +113,13 @@ void test_read_nested_list()
         sl_value list = sl_read(state, "(a (b c) d)");
 
         assert(sl_type(list) == state->tList);
-        assert(NUM2INT(sl_size(state, list)) == 3);
+        assert(NUM2INT(sl_list_size(state, list)) == 3);
 
         assert(sl_first(state, list) == sl_intern(state, "a"));
 
         sl_value nested_list = sl_first(state, sl_rest(state, list));
         assert(sl_type(nested_list) == state->tList);
-        assert(NUM2INT(sl_size(state, nested_list)) == 2);
+        assert(NUM2INT(sl_list_size(state, nested_list)) == 2);
         assert(sl_first(state, nested_list) == sl_intern(state, "b"));
         assert(sl_first(state, sl_rest(state, nested_list)) == sl_intern(state, "c"));
 

@@ -57,7 +57,7 @@ sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest)
         size_t new_size;
 
         if (sl_type(rest) == state->tList) {
-                new_size = NUM2INT(sl_size(state, rest)) + 1;
+                new_size = NUM2INT(sl_list_size(state, rest)) + 1;
         } else {
                 /* TODO: The size of a list should never be -1. We
                  * should raise an exception here instead because
@@ -124,15 +124,11 @@ sl_rest(struct sl_interpreter_state *state, sl_value list)
 }
 
 sl_value
-sl_size(struct sl_interpreter_state *state, sl_value val)
+sl_list_size(struct sl_interpreter_state *state, sl_value val)
 {
-        sl_value type = sl_type(val);
-        assert(type == state->tList || type == state->tString);
+        assert(sl_type(val) == state->tList);
 
-        if (type == state->tList)
-                return sl_integer_new(state, SL_LIST(val)->size);
-        else
-                return sl_integer_new(state, SL_STRING(val)->size);
+        return sl_integer_new(state, SL_LIST(val)->size);
 }
 
 sl_value
@@ -220,4 +216,5 @@ sl_init_list(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "first", sl_first, 1, sl_list(state, 1, state->tList));
         sl_define_function(state, "rest", sl_rest, 1, sl_list(state, 1, state->tList));
+        sl_define_function(state, "size", sl_list_size, 1, sl_list(state, 1, state->tList));
 }

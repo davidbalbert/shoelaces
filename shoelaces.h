@@ -190,7 +190,7 @@ sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
 
 sl_value sl_list_new(struct sl_interpreter_state *state, sl_value first, sl_value rest);
 sl_value sl_list(struct sl_interpreter_state *state, size_t size, ...);
-sl_value sl_size(struct sl_interpreter_state *state, sl_value list);
+sl_value sl_list_size(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_first(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_second(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_third(struct sl_interpreter_state *state, sl_value list);
@@ -213,3 +213,4 @@ char *sl_string_cstring(struct sl_interpreter_state *state, sl_value string);
 sl_value sl_string_new(struct sl_interpreter_state *state, char *value);
 sl_value sl_inspect(struct sl_interpreter_state *state, sl_value val);
 sl_value sl_string_concat(struct sl_interpreter_state *state, sl_value s1, sl_value s2);
+sl_value sl_string_size(struct sl_interpreter_state *state, sl_value string);

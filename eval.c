@@ -162,17 +162,17 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                 sl_value first = sl_first(state, expression);
 
                 if (state->s_def == first) {
-                        assert(NUM2INT(sl_size(state, expression)) == 3);
+                        assert(NUM2INT(sl_list_size(state, expression)) == 3);
 
                         sl_value second = sl_second(state, expression);
                         sl_value third = sl_third(state, expression);
                         return sl_def(state, second, sl_eval(state, third, environment));
                 } else if (state->s_quote == first) {
-                        assert(NUM2INT(sl_size(state, expression)) == 2);
+                        assert(NUM2INT(sl_list_size(state, expression)) == 2);
 
                         return sl_second(state, expression);
                 } else if (state->s_if == first) {
-                        assert(NUM2INT(sl_size(state, expression)) == 4);
+                        assert(NUM2INT(sl_list_size(state, expression)) == 4);
 
                         sl_value rest = sl_rest(state, expression);
                         sl_value result = sl_eval(state, sl_first(state, rest), environment);
