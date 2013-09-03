@@ -44,6 +44,7 @@ void sl_init_symbol(struct sl_interpreter_state *state);
 void sl_init_number(struct sl_interpreter_state *state);
 void sl_init_boolean(struct sl_interpreter_state *state);
 void sl_init_function(struct sl_interpreter_state *state);
+void sl_init_eval(struct sl_interpreter_state *state);
 void sl_init_gc(struct sl_interpreter_state *state);
 void sl_init_reader(struct sl_interpreter_state *state);
 
@@ -103,6 +104,7 @@ sl_init()
 
         /* initialize other types here */
         sl_init_number(state);
+        sl_init_eval(state);
 
         /* initialize the reader */
         sl_init_reader(state);
@@ -209,6 +211,12 @@ sl_def(struct sl_interpreter_state *state, sl_value name, sl_value value)
 }
 
 sl_value
+sl_eq(struct sl_interpreter_state *state, sl_value a, sl_value b)
+{
+        return a == b ? state->sl_true : state->sl_false;
+}
+
+sl_value
 sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
         if (a == b) {
                 return state->sl_true;
@@ -240,4 +248,13 @@ sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
         }
 
         return state->sl_false;
+}
+
+void
+sl_init_eval(struct sl_interpreter_state *state)
+{
+        /*
+        sl_define_function(state, "eq?", sl_eq, 2, sl_list(state, 2, state->iAny, state->iAny));
+        sl_define_function(state, "equals?", sl_equals, 2, sl_list(state, 2, state->iAny, state->iAny));
+        */
 }

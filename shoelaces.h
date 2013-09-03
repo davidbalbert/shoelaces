@@ -214,3 +214,4 @@ sl_value sl_string_new(struct sl_interpreter_state *state, char *value);
 sl_value sl_inspect(struct sl_interpreter_state *state, sl_value val);
 sl_value sl_string_concat(struct sl_interpreter_state *state, sl_value s1, sl_value s2);
 sl_value sl_string_size(struct sl_interpreter_state *state, sl_value string);
+sl_value sl_string_empty(struct sl_interpreter_state *state, sl_value string);

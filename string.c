@@ -68,6 +68,12 @@ sl_string_size(struct sl_interpreter_state *state, sl_value string)
         return sl_integer_new(state, SL_STRING(string)->size);
 }
 
+sl_value
+sl_string_empty(struct sl_interpreter_state *state, sl_value string)
+{
+        return strcmp(SL_STRING(string)->value, "") == 0 ? state->sl_true : state->sl_false;
+}
+
 
 /* NOTE: This function is needed so that all required types can be set up
  * before we start adding things to the environment. If in doubt, you should
@@ -85,4 +91,9 @@ void
 sl_init_string(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "size", sl_string_size, 1, sl_list(state, 1, state->tString));
+
+        /* TODO: concat should take an arbitrary number of arguments */
+        sl_define_function(state, "concat", sl_string_size, 2, sl_list(state, 2, state->tString, state->tString));
+
+        sl_define_function(state, "empty?", sl_string_empty, 1, sl_list(state, 1, state->tString));
 }

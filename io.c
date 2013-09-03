@@ -47,3 +47,11 @@ sl_p(struct sl_interpreter_state *state, sl_value val)
 {
         printf("%s\n", sl_string_cstring(state, sl_inspect(state, val)));
 }
+
+void
+sl_init_io(struct sl_interpreter_state *state)
+{
+        /*
+        sl_define_function(state, "p", sl_p, 1, sl_list(state, 1, state->iAny);
+        */
+}
