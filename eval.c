@@ -87,6 +87,7 @@ sl_init()
         state->global_env = state->sl_empty_list;
 
         boot_def_type(state, state->tType);
+        boot_def_type(state, state->tAny);
         boot_def_type(state, state->tString);
         boot_def_type(state, state->tList);
         boot_def_type(state, state->tSymbol);

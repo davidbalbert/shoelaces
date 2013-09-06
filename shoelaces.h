@@ -23,6 +23,8 @@ struct SLType
         /* TODO: Change to Symbol? If you do this, you must also
          * change fix_type_names */
         sl_value name; /* String */
+        sl_value super; /* Type */
+        unsigned int abstract:1;
 };
 
 struct SLSymbol
@@ -105,6 +107,7 @@ struct sl_interpreter_state {
         sl_value global_env;
 
         sl_value tType;
+        sl_value tAny;
         sl_value tSymbol;
         sl_value tInteger;
         sl_value tBoolean;
@@ -134,6 +137,7 @@ void * memzero(void *p, size_t length);
 
 /* more types */
 sl_value sl_type_new(struct sl_interpreter_state *state, sl_value name);
+sl_value sl_abstract_type_new(struct sl_interpreter_state *state, sl_value name);
 sl_value sl_type(sl_value object);
 sl_value sl_types(struct sl_interpreter_state *state, sl_value values);
 
