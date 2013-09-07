@@ -235,6 +235,10 @@ sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
         } else if (type == state->tInteger) {
                 return NUM2INT(a) == NUM2INT(b) ? state->sl_true : state->sl_false;
         } else if (type == state->tList) {
+                if (NUM2INT(sl_list_size(state, a)) != NUM2INT(sl_list_size(state, b))) {
+                        return state->sl_false;
+                }
+
                 sl_value first_a = sl_first(state, a);
                 sl_value first_b = sl_first(state, b);
 
