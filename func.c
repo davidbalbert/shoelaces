@@ -183,12 +183,9 @@ sl_function_inspect(struct sl_interpreter_state *state, sl_value func)
         }
 }
 
-sl_value
-sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
+static sl_value
+method_for_arguments(struct sl_interpreter_state *state, sl_value func, sl_value args)
 {
-        assert(sl_type(func) == state->tFunction);
-        assert(sl_type(args) == state->tList);
-
         /* TODO: replace sl_types with "map" and "type" */
         sl_value types = sl_types(state, args);
 
@@ -199,7 +196,16 @@ sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
                 abort();
         }
 
-        sl_value method = sl_alist_get(state, SL_FUNCTION(func)->methods, types);
+        return sl_alist_get(state, SL_FUNCTION(func)->methods, types);
+}
+
+sl_value
+sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
+{
+        assert(sl_type(func) == state->tFunction);
+        assert(sl_type(args) == state->tList);
+
+        sl_value method = method_for_arguments(state, func, args);
 
         if (method_is_cfunc(state, method)) {
                 return SL_METHOD(method)->invoker(state, method, args);
