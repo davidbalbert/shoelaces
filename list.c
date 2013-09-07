@@ -89,6 +89,12 @@ sl_value
 sl_first(struct sl_interpreter_state *state, sl_value list)
 {
         assert(sl_type(list) == state->tList);
+
+        if (list == state->sl_empty_list) {
+                fprintf(stderr, "Error: You can't call `first' on the empty list\n");
+                abort();
+        }
+
         return SL_LIST(list)->first;
 }
 
@@ -120,6 +126,12 @@ sl_value
 sl_rest(struct sl_interpreter_state *state, sl_value list)
 {
         assert(sl_type(list) == state->tList);
+
+        if (list == state->sl_empty_list) {
+                fprintf(stderr, "Error: You can't call `rest' on the empty list\n");
+                abort();
+        }
+
         return SL_LIST(list)->rest;
 }
 
