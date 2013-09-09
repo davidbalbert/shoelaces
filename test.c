@@ -332,6 +332,21 @@ test_eval_function_call()
         sl_destroy(state);
 }
 
+void
+test_eval_symbol()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "'foo");
+
+        sl_value out1 = sl_eval(state, in, state->global_env);
+        sl_value out2 = sl_eval(state, in, state->global_env);
+
+        assert(out1 == out2);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -357,6 +372,7 @@ main(int argc, char *argv[])
         test_eval_quote();
         test_eval_if();
         test_eval_empty_list();
+        test_eval_symbol();
 
         test_eval_function_call();
         /*test_eval_eval();*/

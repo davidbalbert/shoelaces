@@ -1,7 +1,18 @@
 #include "shoelaces.h"
 #include "internal.h"
 
-void add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), int arg_count, sl_value type_list);
+static void add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), int arg_count, sl_value type_list);
+
+static sl_value
+method_table_new(struct sl_interpreter_state *state)
+{
+        sl_value method_table = sl_gc_alloc(state, sizeof(struct SLMethodTable));
+        SL_BASIC(method_table)->type = state->tMethodTable;
+        SL_METHOD_TABLE(method_table)->method_map = state->sl_empty_list;
+        SL_METHOD_TABLE(method_table)->method = NULL;
+
+        return method_table;
+}
 
 sl_value
 func_new(struct sl_interpreter_state *state, sl_value name)
@@ -11,7 +22,7 @@ func_new(struct sl_interpreter_state *state, sl_value name)
         sl_value f = sl_gc_alloc(state, sizeof(struct SLFunction));
         SL_BASIC(f)->type = state->tFunction;
         SL_FUNCTION(f)->name = name;
-        SL_FUNCTION(f)->methods = state->sl_empty_list;
+        SL_FUNCTION(f)->method_table = method_table_new(state);
 
         return f;
 }
@@ -111,18 +122,18 @@ get_invoker_for_argc(int argc)
 }
 
 sl_value
-method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value (*method_body)(), int arg_count, sl_value type_list)
+method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value (*method_body)(), int arg_count, sl_value signature)
 {
         assert(sl_type(function) == state->tFunction);
+        assert(sl_type(signature) == state->tList);
 
-        /* TODO: Make type_list an array. Scaning it on invoke is order N*M :( */
-        assert(sl_type(type_list) == state->tList);
-        assert(NUM2INT(sl_list_size(state, type_list)) == arg_count);
+        /* TODO: figure out argcount for vararg methods */
+        assert(NUM2INT(sl_list_size(state, signature)) == arg_count);
 
         sl_value m = sl_gc_alloc(state, sizeof(struct SLMethod));
         SL_BASIC(m)->type = state->tMethod;
         SL_METHOD(m)->method_type = SL_METHOD_CFUNC;
-        SL_METHOD(m)->signature = type_list;
+        SL_METHOD(m)->signature = signature;
         SL_METHOD(m)->function = function;
         SL_METHOD(m)->cfunc_body = method_body;
         SL_METHOD(m)->invoker = get_invoker_for_argc(arg_count);
@@ -162,12 +173,35 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
         }
 }
 
-void
-add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), int arg_count, sl_value type_list)
+static sl_value
+method_table_for_signature(struct sl_interpreter_state *state, sl_value method_table, sl_value signature)
 {
-        sl_value m = method_new_cfunc(state, func, method_body, arg_count, type_list);
+        if (signature == state->sl_empty_list) {
+                return method_table;
+        }
 
-        SL_FUNCTION(func)->methods = sl_alist_set(state, SL_FUNCTION(func)->methods, type_list, m);
+        sl_value next_arg = sl_first(state, signature);
+        sl_value method_map = SL_METHOD_TABLE(method_table)->method_map;
+        sl_value rest_signature = sl_rest(state, signature);
+
+        if (sl_alist_has_key(state, method_map, next_arg) == state->sl_true) {
+                sl_value next_method_table = sl_alist_get(state, method_map, next_arg);
+                return method_table_for_signature(state, next_method_table, rest_signature);
+        } else {
+                sl_value next_method_table = method_table_new(state);
+                SL_METHOD_TABLE(method_table)->method_map = sl_alist_set(state, method_map, next_arg, next_method_table);
+                return method_table_for_signature(state, next_method_table, rest_signature);
+        }
+}
+
+static void
+add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), int arg_count, sl_value signature)
+{
+        sl_value m = method_new_cfunc(state, func, method_body, arg_count, signature);
+
+        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature);
+
+        SL_METHOD_TABLE(method_table)->method = m;
 }
 
 sl_value
@@ -183,20 +217,96 @@ sl_function_inspect(struct sl_interpreter_state *state, sl_value func)
         }
 }
 
+sl_value
+sl_method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
+{
+        struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
+        sl_value s = sl_string_new(state, "#<MethodTable method: ");
+
+        if (mt->method != NULL) {
+                s = sl_string_concat(state, s, sl_inspect(state, mt->method));
+        } else {
+                s = sl_string_concat(state, s, sl_string_new(state, "NULL"));
+        }
+
+        s = sl_string_concat(state, s, sl_string_new(state, " method_map: "));
+        s = sl_string_concat(state, s, sl_inspect(state, mt->method_map));
+
+        return s;
+}
+
+sl_value
+sl_method_inspect(struct sl_interpreter_state *state, sl_value method)
+{
+        struct SLMethod *m = SL_METHOD(method);
+        sl_value s = sl_string_new(state, "#<Method ");
+        s = sl_string_concat(state, s, sl_inspect(state, SL_FUNCTION(m->function)->name));
+        s = sl_string_concat(state, s, sl_string_new(state, " "));
+        s = sl_string_concat(state, s, sl_inspect(state, m->signature));
+
+        return s;
+}
+
+static sl_value
+lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_value args)
+{
+        struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
+        sl_value method = NULL;
+        sl_value next_method_table;
+
+        if (args == state->sl_empty_list) {
+                if (mt->method) {
+                        return mt->method;
+                } else {
+                        return NULL;
+                }
+        }
+
+        sl_value first_arg = sl_first(state, args);
+
+        if (sl_alist_has_key(state, mt->method_map, first_arg) == state->sl_true) {
+                next_method_table = sl_alist_get(state, mt->method_map, first_arg);
+                method = lookup_method(state, next_method_table, sl_rest(state, args));
+
+                if (method != NULL) {
+                        return method;
+                }
+        }
+
+        sl_value type = sl_type(first_arg);
+
+        while (type != NULL) {
+                if (sl_alist_has_key(state, mt->method_map, type) == state->sl_true) {
+                        next_method_table = sl_alist_get(state, mt->method_map, type);
+                        method = lookup_method(state, next_method_table, sl_rest(state, args));
+
+                        if (method != NULL) {
+                                return method;
+                        }
+                }
+
+                type = SL_TYPE(type)->super;
+        }
+
+        return NULL;
+}
+
 static sl_value
 method_for_arguments(struct sl_interpreter_state *state, sl_value func, sl_value args)
 {
-        /* TODO: replace sl_types with "map" and "type" */
-        sl_value types = sl_types(state, args);
+        sl_value method = lookup_method(state, SL_FUNCTION(func)->method_table, args);
 
-        if (sl_alist_has_key(state, SL_FUNCTION(func)->methods, types) == state->sl_false) {
+        if (method == NULL) {
+                /* TODO: replace sl_types with "map" and "type" */
+                sl_value types = sl_types(state, args);
+
                 fprintf(stderr, "Error: %s is not defined for %s\n",
                                 sl_string_cstring(state, sl_inspect(state, func)),
                                 sl_string_cstring(state, sl_inspect(state, types)));
                 abort();
         }
 
-        return sl_alist_get(state, SL_FUNCTION(func)->methods, types);
+        return method;
 }
 
 sl_value
@@ -220,4 +330,9 @@ sl_init_function(struct sl_interpreter_state *state)
 {
         state->tFunction = sl_type_new(state, sl_string_new(state, "Function"));
         state->tMethod = sl_type_new(state, sl_string_new(state, "Method"));
+
+        /* I don't love that the MethodTable type is exposed as it's really an
+         * internal type. Maybe we'll do something about that, but for now, we
+         * need it in the environment so that we can mark it. */
+        state->tMethodTable = sl_type_new(state, sl_string_new(state, "MethodTable"));
 }

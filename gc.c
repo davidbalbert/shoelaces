@@ -90,7 +90,10 @@ mark(struct sl_interpreter_state *state, sl_value value)
                 mark(state, SL_LIST(value)->rest);
         } else if (state->tFunction == type) {
                 mark(state, SL_FUNCTION(value)->name);
-                mark(state, SL_FUNCTION(value)->methods);
+                mark(state, SL_FUNCTION(value)->method_table);
+        } else if (state->tMethodTable == type) {
+                mark(state, SL_METHOD_TABLE(value)->method);
+                mark(state, SL_METHOD_TABLE(value)->method_map);
         } else if (state->tMethod == type) {
                 mark(state, SL_METHOD(value)->signature);
                 mark(state, SL_METHOD(value)->function);

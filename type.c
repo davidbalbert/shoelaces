@@ -99,6 +99,12 @@ sl_abstract(struct sl_interpreter_state *state, sl_value type)
         return SL_TYPE(type)->abstract ? state->sl_true : state->sl_false;
 }
 
+static sl_value
+type_of(struct sl_interpreter_state *state, sl_value val)
+{
+        return SL_BASIC(val)->type;
+}
+
 void
 fix_type_names(struct sl_interpreter_state *state)
 {
@@ -131,4 +137,5 @@ sl_init_type(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "super", sl_super, 1, sl_list(state, 1, state->tType));
         sl_define_function(state, "abstract?", sl_abstract, 1, sl_list(state, 1, state->tType));
+        sl_define_function(state, "type", type_of, 1, sl_list(state, 1, state->tAny));
 }

@@ -35,6 +35,10 @@ sl_inspect(struct sl_interpreter_state *state, sl_value val)
                 str = sl_string_inspect(state, val);
         } else if (state->tFunction == type) {
                 str = sl_function_inspect(state, val);
+        } else if (state->tMethodTable == type) {
+                str = sl_method_table_inspect(state, val);
+        } else if (state->tMethod == type) {
+                str = sl_method_inspect(state, val);
         } else {
                 str = generic_inspect(state, val);
         }

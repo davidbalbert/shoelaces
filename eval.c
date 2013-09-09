@@ -258,8 +258,6 @@ sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
 void
 sl_init_eval(struct sl_interpreter_state *state)
 {
-        /*
-        sl_define_function(state, "eq?", sl_eq, 2, sl_list(state, 2, state->iAny, state->iAny));
-        sl_define_function(state, "equals?", sl_equals, 2, sl_list(state, 2, state->iAny, state->iAny));
-        */
+        sl_define_function(state, "eq?", sl_eq, 2, sl_list(state, 2, state->tAny, state->tAny));
+        sl_define_function(state, "equals?", sl_equals, 2, sl_list(state, 2, state->tAny, state->tAny));
 }

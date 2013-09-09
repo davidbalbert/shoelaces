@@ -64,7 +64,14 @@ struct SLFunction
 {
         struct SLBasic basic;
         sl_value name; /* Symbol */
-        sl_value methods; /* Association List */
+        sl_value method_table; /* MethodTable */
+};
+
+struct SLMethodTable
+{
+        struct SLBasic basic;
+        sl_value method; /* Method */
+        sl_value method_map; /* Association List */
 };
 
 struct sl_interpreter_state;
@@ -87,15 +94,16 @@ struct SLMethod
         sl_cfunc_invoker invoker;
 };
 
-#define SL_BASIC(v)    ((struct SLBasic *)(v))
-#define SL_TYPE(v)     ((struct SLType *)(v))
-#define SL_SYMBOL(v)   ((struct SLSymbol *)(v))
-#define SL_INTEGER(v)  ((struct SLInteger *)(v))
-#define SL_BOOLEAN(v)  ((struct SLBoolean *)(v))
-#define SL_LIST(v)     ((struct SLList *)(v))
-#define SL_STRING(v)   ((struct SLString *)(v))
-#define SL_FUNCTION(v) ((struct SLFunction *)(v))
-#define SL_METHOD(v)   ((struct SLMethod *)(v))
+#define SL_BASIC(v)         ((struct SLBasic *)(v))
+#define SL_TYPE(v)          ((struct SLType *)(v))
+#define SL_SYMBOL(v)        ((struct SLSymbol *)(v))
+#define SL_INTEGER(v)       ((struct SLInteger *)(v))
+#define SL_BOOLEAN(v)       ((struct SLBoolean *)(v))
+#define SL_LIST(v)          ((struct SLList *)(v))
+#define SL_STRING(v)        ((struct SLString *)(v))
+#define SL_FUNCTION(v)      ((struct SLFunction *)(v))
+#define SL_METHOD_TABLE(v)  ((struct SLMethodTable *)(v))
+#define SL_METHOD(v)        ((struct SLMethod *)(v))
 
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
@@ -114,6 +122,7 @@ struct sl_interpreter_state {
         sl_value tList;
         sl_value tString;
         sl_value tFunction;
+        sl_value tMethodTable;
         sl_value tMethod;
 
         sl_value sl_true;
@@ -149,6 +158,8 @@ sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean
 sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
 sl_value sl_function_inspect(struct sl_interpreter_state *state, sl_value func);
+sl_value sl_method_table_inspect(struct sl_interpreter_state *state, sl_value method_table);
+sl_value sl_method_inspect(struct sl_interpreter_state *state, sl_value method);
 
 /* equality */
 sl_value sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b);
