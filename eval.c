@@ -143,7 +143,7 @@ eval_each(struct sl_interpreter_state *state, sl_value args, sl_value environmen
         } else {
                 sl_value first = sl_first(state, args);
                 sl_value rest = sl_rest(state, args);
-                return sl_list_new(state, sl_eval(state, first, environment), rest);
+                return sl_list_new(state, sl_eval(state, first, environment), eval_each(state, rest, environment));
         }
 }
 
