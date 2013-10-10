@@ -10,6 +10,7 @@ static sl_value read_string(struct sl_interpreter_state *state, struct sl_reader
 static sl_value read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader);
 
 static sl_value read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val);
+static sl_value read_annotation_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val);
 
 static sl_value parse_token(struct sl_interpreter_state *state, char *token);
 
@@ -84,6 +85,12 @@ at_start_of_type_expression(struct sl_reader *reader)
 }
 
 static int
+at_start_of_annotation_expression(struct sl_reader *reader)
+{
+        return *reader->end_position == ':';
+}
+
+static int
 at_end_of_type_expression(struct sl_reader *reader)
 {
         return *reader->end_position == '}';
@@ -126,11 +133,11 @@ next_char_is_digit(struct sl_reader *reader)
 }
 
 static int
-next_char_is_list_delimeter(struct sl_reader *reader)
+next_char_is_delimeter(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
 
-        return ch == '(' || ch == ')' || ch == '{' || ch == '}';
+        return ch == '(' || ch == ')' || ch == '{' || ch == '}' || ch == ':';
 }
 
 static int
@@ -190,7 +197,10 @@ read_token(struct sl_interpreter_state *state, struct sl_reader *reader)
                 if (at_start_of_type_expression(reader)) {
                         sl_value first_token = parse_token(state, get_token(reader));
                         return read_type_expression(state, reader, first_token);
-                } else if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                } else if (at_start_of_annotation_expression(reader)) {
+                        sl_value first_token = parse_token(state, get_token(reader));
+                        return read_annotation_expression(state, reader, first_token);
+                } else if (next_char_is_whitespace(reader) || next_char_is_delimeter(reader) || at_end_of_input(reader)) {
                         return parse_token(state, get_token(reader));
                 } else {
                         advance_one(reader);
@@ -223,7 +233,13 @@ read_integer(struct sl_interpreter_state *state, struct sl_reader *reader)
         while (1) {
                 if (next_char_is_digit(reader)) {
                         advance_one(reader);
-                } else if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                } else if (at_start_of_annotation_expression(reader)) {
+                        token = get_token(reader);
+                        number = sl_integer_new(state, strtol(token, NULL, 10));
+                        free(token);
+
+                        return read_annotation_expression(state, reader, number);
+                } else if (next_char_is_whitespace(reader) || next_char_is_delimeter(reader) || at_end_of_input(reader)) {
                         token = get_token(reader);
                         number = sl_integer_new(state, strtol(token, NULL, 10));
                         free(token);
@@ -325,7 +341,11 @@ read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
                 list = sl_list_new(state, val, list);
         }
 
-        return sl_reverse(state, list);
+        if (at_start_of_annotation_expression(reader)) {
+                return read_annotation_expression(state, reader, sl_reverse(state, list));
+        } else {
+                return sl_reverse(state, list);
+        }
 }
 
 static sl_value
@@ -350,7 +370,11 @@ read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
 
         free(token);
 
-        return str;
+        if (at_start_of_annotation_expression(reader)) {
+                return read_annotation_expression(state, reader, str);
+        } else {
+                return str;
+        }
 }
 
 static sl_value
@@ -360,14 +384,18 @@ read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader)
         sl_value keyword;
 
         /* reading ':' should return the symbol :, not a keyword */
-        if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+        if (next_char_is_whitespace(reader) || next_char_is_delimeter(reader) || at_end_of_input(reader)) {
+                if (at_start_of_annotation_expression(reader)) {
+                        reader_error(reader, "Invalid token (more than 1 ':' in a row).\n");
+                }
+
                 return sl_intern(state, ":");
         }
 
         while (1) {
                 advance_one(reader);
 
-                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                if (next_char_is_whitespace(reader) || next_char_is_delimeter(reader) || at_end_of_input(reader)) {
                         break;
                 }
         }
@@ -378,7 +406,11 @@ read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader)
 
         free(token);
 
-        return keyword;
+        if (at_start_of_annotation_expression(reader)) {
+                return read_annotation_expression(state, reader, keyword);
+        } else {
+                return keyword;
+        }
 }
 
 static sl_value
@@ -425,6 +457,33 @@ read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reade
         return sl_reverse(state, type_expression);
 }
 
+static sl_value
+read_annotation_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val)
+{
+        sl_value annotation_expression = sl_list_new(state, sl_intern(state, ":"), state->sl_empty_list);
+
+        annotation_expression = sl_list_new(state, first_val, annotation_expression);
+
+        skip_one(reader);
+
+        if (at_end_of_input(reader)) {
+                reader_error(reader, "Reached EOF, but expected '}'");
+        }
+
+        if (next_char_is_whitespace(reader)) {
+                reader_error(reader, "Reached whitespace, but expected annotation expression");
+        }
+
+        if (next_char_is_closing_delimeter(reader)) {
+                reader_error(reader, "Reached '%c', but expected annotation expression", peek(reader));
+        }
+
+        sl_value val = read(state, reader);
+
+        annotation_expression = sl_list_new(state, val, annotation_expression);
+
+        return sl_reverse(state, annotation_expression);
+}
 
 sl_value
 sl_read(struct sl_interpreter_state *state, char *input)

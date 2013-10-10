@@ -194,6 +194,43 @@ test_read_type_expression()
 }
 
 void
+test_read_annotation_expression()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value actual = sl_read(state, "foo:bar");
+        sl_value expected = sl_list(state, 3, sl_intern(state, ":"), sl_intern(state, "foo"), sl_intern(state, "bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
+
+
+        actual = sl_read(state, ":foo:bar");
+        expected = sl_list(state, 3, sl_intern(state, ":"), sl_intern_keyword(state, "foo"), sl_intern(state, "bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
+
+
+        actual = sl_read(state, "42:bar");
+        expected = sl_list(state, 3, sl_intern(state, ":"), sl_integer_new(state, 42), sl_intern(state, "bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
+
+
+        actual = sl_read(state, "\"hello\":bar");
+        expected = sl_list(state, 3, sl_intern(state, ":"), sl_string_new(state, "hello"), sl_intern(state, "bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
+
+
+        actual = sl_read(state, "(a list):bar");
+        expected = sl_list(state, 3, sl_intern(state, ":"), sl_list(state, 2, sl_intern(state, "a"), sl_intern(state, "list")), sl_intern(state, "bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
+
+        sl_destroy(state);
+}
+
+void
 test_gc()
 {
         struct sl_interpreter_state *state = sl_init();
@@ -396,6 +433,7 @@ main(int argc, char *argv[])
         test_read_keyword();
         test_read_colon();
         test_read_type_expression();
+        test_read_annotation_expression();
 
         test_gc();
 
