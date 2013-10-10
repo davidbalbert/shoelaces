@@ -7,6 +7,7 @@ typedef sl_value (*reader_macro)(struct sl_interpreter_state *state, struct sl_r
 static sl_value read_list(struct sl_interpreter_state *state, struct sl_reader *reader);
 static sl_value read_quote(struct sl_interpreter_state *state, struct sl_reader *reader);
 static sl_value read_string(struct sl_interpreter_state *state, struct sl_reader *reader);
+static sl_value read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader);
 
 static sl_value read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val);
 
@@ -32,6 +33,7 @@ new_reader(char *input)
         reader->macros['('] = read_list;
         reader->macros['\''] = read_quote;
         reader->macros['"'] = read_string;
+        reader->macros[':'] = read_keyword;
         return reader;
 }
 
@@ -349,6 +351,29 @@ read_string(struct sl_interpreter_state *state, struct sl_reader *reader)
         free(token);
 
         return str;
+}
+
+static sl_value
+read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader)
+{
+        char *token;
+        sl_value keyword;
+
+        while (1) {
+                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader)) {
+                        break;
+                }
+
+                advance_one(reader);
+        }
+
+        token = get_token(reader);
+
+        keyword = sl_intern_keyword(state, token);
+
+        free(token);
+
+        return keyword;
 }
 
 static sl_value

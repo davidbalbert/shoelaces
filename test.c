@@ -1,21 +1,6 @@
 #include "shoelaces.h"
 
 void
-test_symbol_table()
-{
-        struct sl_interpreter_state *state = sl_init();
-
-        sl_value sym = sl_symbol_table_get(state, "foo");
-        assert(sym == NULL);
-
-        sl_symbol_table_put(state, "foo", (sl_value)1);
-        sym = sl_symbol_table_get(state, "foo");
-        assert(sym == (sl_value)1);
-
-        sl_destroy(state);
-}
-
-void
 test_read_integer()
 {
         struct sl_interpreter_state *state = sl_init();
@@ -166,6 +151,19 @@ test_read_dotted_pair()
 
         assert(sl_type(sl_rest(state, dotted_pair)) == state->tInteger);
         assert(NUM2INT(sl_rest(state, dotted_pair)) == 2);
+
+        sl_destroy(state);
+}
+
+void
+test_read_keyword()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value kw = sl_read(state, ":foo");
+
+        assert(sl_type(kw) == state->tKeyword);
+        assert(kw == sl_intern_keyword(state, "foo"));
 
         sl_destroy(state);
 }
@@ -374,7 +372,6 @@ int
 main(int argc, char *argv[])
 {
         /* reader */
-        test_symbol_table();
         test_read_integer();
         test_read_sym();
         test_read_boolean();
@@ -384,6 +381,7 @@ main(int argc, char *argv[])
         test_read_empty_list();
         test_read_quote();
         test_read_dotted_pair();
+        test_read_keyword();
         test_read_type_expression();
 
         test_gc();

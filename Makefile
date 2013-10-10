@@ -1,14 +1,14 @@
 CC=clang
 CFLAGS=-g -Wall -std=c99
 
-shoestrap: shoestrap.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o
+shoestrap: shoestrap.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o keyword.c
 
 run-tests: test
 	./test
 
 .PHONY: run-tests
 
-test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o
+test: test.o type.o number.o reader.o symbol.o eval.o boolean.o list.o util.o io.o string.o gc.o func.o keyword.c
 
 shoestrap.o: shoestrap.c shoelaces.h
 
@@ -37,6 +37,8 @@ string.o: string.c shoelaces.h internal.h
 gc.o: gc.c shoelaces.h internal.h
 
 func.o: func.c shoelaces.h internal.h
+
+keyword.o: keyword.c shoelaces.h internal.h
 
 shoelaces.h: khash.h
 

@@ -27,6 +27,8 @@ sl_inspect(struct sl_interpreter_state *state, sl_value val)
                 str = sl_integer_inspect(state, val);
         } else if (state->tSymbol == type) {
                 str = sl_symbol_inspect(state, val);
+        } else if (state->tKeyword == type) {
+                str = sl_keyword_inspect(state, val);
         } else if (state->tBoolean == type) {
                 str = sl_boolean_inspect(state, val);
         } else if (state->tList == type) {

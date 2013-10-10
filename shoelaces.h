@@ -33,6 +33,12 @@ struct SLSymbol
         sl_value name; /* String */
 };
 
+struct SLKeyword
+{
+        struct SLBasic basic;
+        sl_value name; /* String */
+};
+
 struct SLInteger
 {
         struct SLBasic basic;
@@ -97,6 +103,7 @@ struct SLMethod
 #define SL_BASIC(v)         ((struct SLBasic *)(v))
 #define SL_TYPE(v)          ((struct SLType *)(v))
 #define SL_SYMBOL(v)        ((struct SLSymbol *)(v))
+#define SL_KEYWORD(v)       ((struct SLKeyword *)(v))
 #define SL_INTEGER(v)       ((struct SLInteger *)(v))
 #define SL_BOOLEAN(v)       ((struct SLBoolean *)(v))
 #define SL_LIST(v)          ((struct SLList *)(v))
@@ -110,6 +117,8 @@ KHASH_MAP_INIT_STR(str, sl_value);
 
 struct sl_interpreter_state {
         khash_t(str) *symbol_table;
+        khash_t(str) *keyword_table;
+
         struct sl_heap *heap;
 
         sl_value global_env;
@@ -124,6 +133,7 @@ struct sl_interpreter_state {
         sl_value tFunction;
         sl_value tMethodTable;
         sl_value tMethod;
+        sl_value tKeyword;
 
         sl_value sl_true;
         sl_value sl_false;
@@ -154,6 +164,7 @@ sl_value sl_types(struct sl_interpreter_state *state, sl_value values);
 sl_value sl_type_inspect(struct sl_interpreter_state *state, sl_value type);
 sl_value sl_integer_inspect(struct sl_interpreter_state *state, sl_value integer);
 sl_value sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol);
+sl_value sl_keyword_inspect(struct sl_interpreter_state *state, sl_value keyword);
 sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean);
 sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
@@ -200,6 +211,9 @@ long NUM2INT(sl_value n);
 /* symbols */
 sl_value sl_intern(struct sl_interpreter_state *state, char *name);
 sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
+
+/* keywords */
+sl_value sl_intern_keyword(struct sl_interpreter_state *state, char *name);
 
 /* lists */
 

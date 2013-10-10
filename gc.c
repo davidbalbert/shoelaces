@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 #define INITIAL_HEAP_CAPACITY 1000
 
@@ -38,7 +39,7 @@ sl_gc_run(struct sl_interpreter_state *state)
 static void
 get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_count)
 {
-        size_t count = 3 + sl_symbol_table_size(state);
+        size_t count = 3 + sl_symbol_table_size(state) + sl_keyword_table_size(state);
         *roots = (sl_value *)sl_native_malloc(count * sizeof(sl_value));
         (*roots)[0] = state->global_env;
         (*roots)[1] = state->sl_true;
@@ -51,6 +52,14 @@ get_roots(struct sl_interpreter_state *state, sl_value **roots, size_t *roots_co
         for (iter = kh_begin(symbol_table); iter != kh_end(symbol_table); ++iter) {
                 if (kh_exist(symbol_table, iter)) {
                         (*roots)[i] = kh_value(symbol_table, iter);
+                        i++;
+                }
+        }
+
+        khash_t(str) *keyword_table = state->keyword_table;
+        for (iter = kh_begin(keyword_table); iter != kh_end(keyword_table); ++iter) {
+                if (kh_exist(keyword_table, iter)) {
+                        (*roots)[i] = kh_value(keyword_table, iter);
                         i++;
                 }
         }

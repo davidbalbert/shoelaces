@@ -18,6 +18,8 @@ sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
 void
 sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value)
 {
+        assert(sl_type(value) == state->tSymbol);
+
         /* TODO: Check for ENOMEM */
         char *duped_name = strdup(name);
         int ret;
@@ -37,12 +39,14 @@ void boot_string(struct sl_interpreter_state *state);
 void fix_type_names(struct sl_interpreter_state *state);
 void boot_list(struct sl_interpreter_state *state);
 void boot_symbol(struct sl_interpreter_state *state);
+void boot_keyword(struct sl_interpreter_state *state);
 void boot_boolean(struct sl_interpreter_state *state);
 
 void sl_init_type(struct sl_interpreter_state *state);
 void sl_init_string(struct sl_interpreter_state *state);
 void sl_init_list(struct sl_interpreter_state *state);
 void sl_init_symbol(struct sl_interpreter_state *state);
+void sl_init_keyword(struct sl_interpreter_state *state);
 void sl_init_number(struct sl_interpreter_state *state);
 void sl_init_boolean(struct sl_interpreter_state *state);
 void sl_init_function(struct sl_interpreter_state *state);
@@ -54,7 +58,9 @@ struct sl_interpreter_state *
 sl_init()
 {
         struct sl_interpreter_state *state = sl_native_malloc(sizeof(struct sl_interpreter_state));
+
         state->symbol_table = kh_init(str);
+        state->keyword_table = kh_init(str);
 
         sl_init_gc(state);
 
@@ -83,6 +89,7 @@ sl_init()
 
         boot_list(state);
         boot_symbol(state);
+        boot_keyword(state);
         boot_boolean(state);
 
         /* set up global environment and add existing types to it */
@@ -93,6 +100,7 @@ sl_init()
         boot_def_type(state, state->tString);
         boot_def_type(state, state->tList);
         boot_def_type(state, state->tSymbol);
+        boot_def_type(state, state->tKeyword);
         boot_def_type(state, state->tBoolean);
 
         /* initialize functions (the rest of the initialization methods depend on this */
@@ -103,6 +111,7 @@ sl_init()
         sl_init_string(state);
         sl_init_list(state);
         sl_init_symbol(state);
+        sl_init_keyword(state);
         sl_init_boolean(state);
 
         /* initialize other types here */
