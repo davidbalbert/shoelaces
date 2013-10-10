@@ -169,6 +169,18 @@ test_read_keyword()
 }
 
 void
+test_read_colon()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value colon = sl_read(state, ":");
+
+        assert(colon == sl_intern(state, ":"));
+
+        sl_destroy(state);
+}
+
+void
 test_read_type_expression()
 {
         struct sl_interpreter_state *state = sl_init();
@@ -382,6 +394,7 @@ main(int argc, char *argv[])
         test_read_quote();
         test_read_dotted_pair();
         test_read_keyword();
+        test_read_colon();
         test_read_type_expression();
 
         test_gc();

@@ -359,12 +359,17 @@ read_keyword(struct sl_interpreter_state *state, struct sl_reader *reader)
         char *token;
         sl_value keyword;
 
+        /* reading ':' should return the symbol :, not a keyword */
+        if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                return sl_intern(state, ":");
+        }
+
         while (1) {
-                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader)) {
+                advance_one(reader);
+
+                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
                         break;
                 }
-
-                advance_one(reader);
         }
 
         token = get_token(reader);
