@@ -1,0 +1,37 @@
+(defn foo (a:Int b:Array{Real 2} c:Int) (+ a b c))
+
+Array{Int64} => (apply-type Array Int64)
+
+100:Int32
+
+():List
+
+::
+<:
+
+(deftype Foo Bar)
+
+(: a Int)
+
+(<> Array Int)
+
+(Array 1 2 3 4 5)
+
+function {T <: Real}(a::Array{T})
+
+Array<Real>
+
+():List<None>
+
+(1):List<Int>
+
+(2 1):List<Int>
+
+(1.5 2 1):List<Number>
+
+@Persistent [1 => 2, 3 => 4]
+
+(let ..
+  #1(some list #1))
+  
+(define inf-cycle #1 '(1 2 3 #1))
