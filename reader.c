@@ -200,11 +200,15 @@ static sl_value
 parse_token(struct sl_interpreter_state *state, char *token)
 {
         if (strcmp(token, "true") == 0) {
+                free(token);
                 return state->sl_true;
         } else if (strcmp(token, "false") == 0) {
+                free(token);
                 return state->sl_false;
         } else {
-                return sl_intern(state, token);
+                sl_value symbol = sl_intern(state, token);
+                free(token);
+                return symbol;
         }
 }
 

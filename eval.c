@@ -18,9 +18,11 @@ sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
 void
 sl_symbol_table_put(struct sl_interpreter_state *state, char *name, sl_value value)
 {
+        /* TODO: Check for ENOMEM */
+        char *duped_name = strdup(name);
         int ret;
         khiter_t iter;
-        iter = kh_put(str, state->symbol_table, name, &ret);
+        iter = kh_put(str, state->symbol_table, duped_name, &ret);
         kh_value(state->symbol_table, iter) = value;
 }
 
