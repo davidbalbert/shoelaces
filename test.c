@@ -1,6 +1,7 @@
 #include "shoelaces.h"
 
-void test_symbol_table()
+void
+test_symbol_table()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -14,7 +15,8 @@ void test_symbol_table()
         sl_destroy(state);
 }
 
-void test_read_integer()
+void
+test_read_integer()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -27,7 +29,8 @@ void test_read_integer()
         sl_destroy(state);
 }
 
-void test_read_sym()
+void
+test_read_sym()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -40,7 +43,8 @@ void test_read_sym()
         sl_destroy(state);
 }
 
-void test_read_boolean()
+void
+test_read_boolean()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -57,7 +61,8 @@ void test_read_boolean()
         sl_destroy(state);
 }
 
-void test_read_string()
+void
+test_read_string()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -70,7 +75,8 @@ void test_read_string()
         sl_destroy(state);
 }
 
-void test_read_empty_list()
+void
+test_read_empty_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -82,7 +88,8 @@ void test_read_empty_list()
         sl_destroy(state);
 }
 
-void test_read_list()
+void
+test_read_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -106,7 +113,8 @@ void test_read_list()
         sl_destroy(state);
 }
 
-void test_read_nested_list()
+void
+test_read_nested_list()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -128,7 +136,8 @@ void test_read_nested_list()
         sl_destroy(state);
 }
 
-void test_read_quote()
+void
+test_read_quote()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -143,7 +152,8 @@ void test_read_quote()
         sl_destroy(state);
 }
 
-void test_read_dotted_pair()
+void
+test_read_dotted_pair()
 {
         struct sl_interpreter_state *state = sl_init();
 
@@ -156,6 +166,19 @@ void test_read_dotted_pair()
 
         assert(sl_type(sl_rest(state, dotted_pair)) == state->tInteger);
         assert(NUM2INT(sl_rest(state, dotted_pair)) == 2);
+
+        sl_destroy(state);
+}
+
+void
+test_read_type_expression()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value actual = sl_read(state, "Foo{Bar}");
+        sl_value expected = sl_list(state, 3, sl_intern(state, "apply-type"), sl_intern(state, "Foo"), sl_intern(state, "Bar"));
+
+        assert(sl_equals(state, expected, actual) == state->sl_true);
 
         sl_destroy(state);
 }
@@ -361,6 +384,7 @@ main(int argc, char *argv[])
         test_read_empty_list();
         test_read_quote();
         test_read_dotted_pair();
+        test_read_type_expression();
 
         test_gc();
 

@@ -8,6 +8,10 @@ static sl_value read_list(struct sl_interpreter_state *state, struct sl_reader *
 static sl_value read_quote(struct sl_interpreter_state *state, struct sl_reader *reader);
 static sl_value read_string(struct sl_interpreter_state *state, struct sl_reader *reader);
 
+static sl_value read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val);
+
+static sl_value parse_token(struct sl_interpreter_state *state, char *token);
+
 struct sl_reader
 {
         char *input;
@@ -72,6 +76,18 @@ at_end_of_list(struct sl_reader *reader)
 }
 
 static int
+at_start_of_type_expression(struct sl_reader *reader)
+{
+        return *reader->end_position == '{';
+}
+
+static int
+at_end_of_type_expression(struct sl_reader *reader)
+{
+        return *reader->end_position == '}';
+}
+
+static int
 next_char_is_whitespace(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
@@ -112,7 +128,15 @@ next_char_is_list_delimeter(struct sl_reader *reader)
 {
         int ch = *reader->end_position;
 
-        return ch == '(' || ch == ')';
+        return ch == '(' || ch == ')' || ch == '{' || ch == '}';
+}
+
+static int
+next_char_is_closing_delimeter(struct sl_reader *reader)
+{
+        int ch = *reader->end_position;
+
+        return ch == ')' || ch == '}';
 }
 
 static int
@@ -157,12 +181,15 @@ get_token(struct sl_reader *reader)
         return token;
 }
 
-static char *
-read_token(struct sl_reader *reader)
+sl_value
+read_token(struct sl_interpreter_state *state, struct sl_reader *reader)
 {
         while (1) {
-                if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
-                        return get_token(reader);
+                if (at_start_of_type_expression(reader)) {
+                        sl_value first_token = parse_token(state, get_token(reader));
+                        return read_type_expression(state, reader, first_token);
+                } else if (next_char_is_whitespace(reader) || next_char_is_list_delimeter(reader) || at_end_of_input(reader)) {
+                        return parse_token(state, get_token(reader));
                 } else {
                         advance_one(reader);
                 }
@@ -223,7 +250,6 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
                         unread_one(reader);
                 }
 
-
                 if (next_char_is_digit(reader)) {
                         return read_integer(state, reader);
                 }
@@ -234,7 +260,7 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
                         return reader->macros[ch](state, reader);
                 }
 
-                return parse_token(state, read_token(reader));
+                return read_token(state, reader);
         }
 }
 
@@ -327,6 +353,44 @@ read_quote(struct sl_interpreter_state *state, struct sl_reader *reader)
         sl_value list = sl_list_new(state, read(state, reader), state->sl_empty_list);
         return sl_list_new(state, sl_intern(state, "quote"), list);
 }
+
+static sl_value
+read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reader, sl_value first_val)
+{
+        sl_value type_expression = sl_list_new(state, sl_intern(state, "apply-type"), state->sl_empty_list);
+        type_expression = sl_list_new(state, first_val, type_expression);
+
+        skip_one(reader);
+
+        sl_value val = NULL;
+
+        while (1) {
+                eat_whitespace(reader);
+
+                if (at_end_of_input(reader)) {
+                        reader_error(reader, "Reached EOF, but expected '}'");
+                }
+
+                if (at_end_of_type_expression(reader)) {
+                        skip_one(reader);
+                        break;
+                }
+
+                if (next_char_is_closing_delimeter(reader)) {
+                        reader_error(reader, "Reached '%c', but expected '}'", peek(reader));
+                }
+
+                val = read(state, reader);
+
+                /* we just checked to see if we're at the end of input */
+                assert(val != NULL);
+
+                type_expression = sl_list_new(state, val, type_expression);
+        }
+
+        return sl_reverse(state, type_expression);
+}
+
 
 sl_value
 sl_read(struct sl_interpreter_state *state, char *input)
