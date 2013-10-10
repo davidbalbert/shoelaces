@@ -417,6 +417,37 @@ test_eval_symbol()
         sl_destroy(state);
 }
 
+void
+test_eval_keyword()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, ":foo");
+        sl_value in2 = sl_read(state, ":foo");
+
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(in == in2);
+        assert(in == out);
+
+        sl_destroy(state);
+}
+
+void
+test_eval_type_assertion()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "123:Integer");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(sl_equals(state, out, sl_integer_new(state, 123)) == state->sl_true);
+
+        /* TODO: assert raises exception on bad annotation */
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -446,6 +477,8 @@ main(int argc, char *argv[])
         test_eval_if();
         test_eval_empty_list();
         test_eval_symbol();
+        test_eval_keyword();
+        test_eval_type_assertion();
 
         test_eval_function_call();
         /*test_eval_eval();*/

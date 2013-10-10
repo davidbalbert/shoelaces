@@ -59,6 +59,7 @@ sl_init_symbol(struct sl_interpreter_state *state)
         state->s_def = sl_intern(state, "def");
         state->s_quote = sl_intern(state, "quote");
         state->s_if = sl_intern(state, "if");
+        state->s_annotate = sl_intern(state, ":");
 
         sl_define_function(state, "intern", sl_intern_string, 1, sl_list(state, 1, state->tString));
 }

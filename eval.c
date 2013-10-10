@@ -196,6 +196,15 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                         } else {
                                 return sl_eval(state, sl_second(state, rest), environment);
                         }
+                } else if (state->s_annotate == first) {
+                        assert(NUM2INT(sl_list_size(state, expression)) == 3);
+
+                        sl_value val = sl_eval(state, sl_second(state, expression), environment);
+                        sl_value type = sl_eval(state, sl_third(state, expression), environment);
+
+                        assert(sl_type(val) == type);
+
+                        return val;
                 } else {
                         sl_value f = sl_eval(state, first, environment);
                         sl_value new_expression = sl_list_new(state, f, sl_rest(state, expression));

@@ -142,6 +142,7 @@ struct sl_interpreter_state {
         sl_value s_def;
         sl_value s_quote;
         sl_value s_if;
+        sl_value s_annotate;
 };
 
 struct sl_interpreter_state *sl_init();
