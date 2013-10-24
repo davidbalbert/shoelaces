@@ -24,6 +24,8 @@ struct SLType
          * change fix_type_names */
         sl_value name; /* String */
         sl_value super; /* Type */
+        sl_value parameters; /* List */
+        size_t arity;
         unsigned int abstract:1;
 };
 
@@ -77,6 +79,7 @@ struct SLMethodTable
 {
         struct SLBasic basic;
         sl_value method; /* Method */
+        sl_value varargs_method; /* Method */
         sl_value method_map; /* Association List */
 };
 
@@ -89,6 +92,7 @@ struct SLMethod
         struct SLBasic basic;
         sl_value signature; /* List */
         sl_value function; /* Function */
+        int has_varargs;
 
         enum {
                 SL_METHOD_CFUNC,
@@ -143,6 +147,7 @@ struct sl_interpreter_state {
         sl_value s_quote;
         sl_value s_if;
         sl_value s_annotate;
+        sl_value s_ampersand;
 };
 
 struct sl_interpreter_state *sl_init();
@@ -159,6 +164,7 @@ void * memzero(void *p, size_t length);
 sl_value sl_type_new(struct sl_interpreter_state *state, sl_value name);
 sl_value sl_abstract_type_new(struct sl_interpreter_state *state, sl_value name);
 sl_value sl_type(sl_value object);
+sl_value sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_value type_parameters);
 sl_value sl_types(struct sl_interpreter_state *state, sl_value values);
 
 /* inspection */
@@ -181,7 +187,7 @@ sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_val
 sl_value sl_def(struct sl_interpreter_state *state, sl_value name, sl_value value);
 
 /* functions */
-void sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), int arg_count, sl_value type_list);
+void sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), sl_value type_list);
 sl_value sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args);
 
 /* gc */
@@ -230,6 +236,7 @@ sl_value sl_rest(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value seperator);
+sl_value sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value item);
 
 /* association lists */
 

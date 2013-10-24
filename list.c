@@ -209,6 +209,18 @@ sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, s
         return sl_list_new(state, pair, alist);
 }
 
+sl_value
+sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value item)
+{
+        if (list == state->sl_empty_list) {
+                return state->sl_false;
+        } else if (sl_equals(state, item, sl_first(state, list)) == state->sl_true) {
+                return state->sl_true;
+        } else {
+                return sl_list_contains(state, sl_rest(state, list), item);
+        }
+}
+
 
 /* NOTE: This function is needed so that all required types can be set up
  * before we start adding things to the environment. If in doubt, you should
@@ -226,14 +238,15 @@ boot_list(struct sl_interpreter_state *state)
 void
 sl_init_list(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "first", sl_first, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "second", sl_second, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "third", sl_third, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "fourth", sl_fourth, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "fifth", sl_fifth, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "rest", sl_rest, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "size", sl_list_size, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "reverse", sl_reverse, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "empty?", sl_empty, 1, sl_list(state, 1, state->tList));
-        sl_define_function(state, "join", sl_empty, 2, sl_list(state, 2, state->tList, state->tString));
+        sl_define_function(state, "first", sl_first, sl_list(state, 1, state->tList));
+        sl_define_function(state, "second", sl_second, sl_list(state, 1, state->tList));
+        sl_define_function(state, "third", sl_third, sl_list(state, 1, state->tList));
+        sl_define_function(state, "fourth", sl_fourth, sl_list(state, 1, state->tList));
+        sl_define_function(state, "fifth", sl_fifth, sl_list(state, 1, state->tList));
+        sl_define_function(state, "rest", sl_rest, sl_list(state, 1, state->tList));
+        sl_define_function(state, "size", sl_list_size, sl_list(state, 1, state->tList));
+        sl_define_function(state, "reverse", sl_reverse, sl_list(state, 1, state->tList));
+        sl_define_function(state, "empty?", sl_empty, sl_list(state, 1, state->tList));
+        sl_define_function(state, "join", sl_empty, sl_list(state, 2, state->tList, state->tString));
+        sl_define_function(state, "contains?", sl_list_contains, sl_list(state, 2, state->tList, state->tAny));
 }

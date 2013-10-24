@@ -448,6 +448,19 @@ test_eval_type_assertion()
         sl_destroy(state);
 }
 
+void
+test_eval_parametric_type()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "List{Integer}");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(out == sl_apply_type(state, state->tList, sl_list(state, 1, state->tInteger)));
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -479,6 +492,7 @@ main(int argc, char *argv[])
         test_eval_symbol();
         test_eval_keyword();
         test_eval_type_assertion();
+        test_eval_parametric_type();
 
         test_eval_function_call();
         /*test_eval_eval();*/

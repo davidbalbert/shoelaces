@@ -51,15 +51,16 @@ void
 boot_symbol(struct sl_interpreter_state *state)
 {
         state->tSymbol = boot_type_new(state, sl_string_new(state, "Symbol"));
+
+        state->s_def = sl_intern(state, "def");
+        state->s_quote = sl_intern(state, "quote");
+        state->s_if = sl_intern(state, "if");
+        state->s_annotate = sl_intern(state, ":");
+        state->s_ampersand = sl_intern(state, "&");
 }
 
 void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
-        state->s_def = sl_intern(state, "def");
-        state->s_quote = sl_intern(state, "quote");
-        state->s_if = sl_intern(state, "if");
-        state->s_annotate = sl_intern(state, ":");
-
-        sl_define_function(state, "intern", sl_intern_string, 1, sl_list(state, 1, state->tString));
+        sl_define_function(state, "intern", sl_intern_string, sl_list(state, 1, state->tString));
 }

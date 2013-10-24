@@ -61,6 +61,46 @@ sl_type(sl_value object)
         return SL_BASIC(object)->type;
 }
 
+static size_t
+type_arity(sl_value type)
+{
+        return SL_TYPE(type)->arity;
+}
+
+sl_value
+sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_value type_parameters)
+{
+        if (sl_type(abstract_type) != state->tType) {
+                fprintf(stderr, "%s is not a Type\n", sl_string_cstring(state, sl_inspect(state, abstract_type)));
+                abort();
+        }
+
+        if (type_arity(abstract_type) != NUM2INT(sl_list_size(state, type_parameters))) {
+                fprintf(stderr, "%s takes %ld type parameters, but %ld supplied\n",
+                                sl_string_cstring(state, sl_inspect(state, abstract_type)),
+                                type_arity(abstract_type),
+                                NUM2INT(sl_list_size(state, type_parameters)));
+                abort();
+        }
+
+        /* TODO: Partial type application */
+
+        sl_value type_name = sl_string_concat(state, sl_inspect(state, abstract_type), sl_string_new(state, "{"));
+        type_name = sl_string_concat(state, type_name, sl_list_join(state, type_parameters, sl_string_new(state, " ")));
+        type_name = sl_string_concat(state, type_name, sl_string_new(state, "}"));
+
+        if (env_has_key(state, state->global_env, type_name)) {
+                return env_get(state, state->global_env, type_name);
+        } else {
+                sl_value type = sl_type_new(state, type_name);
+                SL_TYPE(type)->super = abstract_type;
+                SL_TYPE(type)->arity = 0;
+                SL_TYPE(type)->parameters = type_parameters;
+
+                return type;
+        }
+}
+
 sl_value
 sl_types(struct sl_interpreter_state *state, sl_value values)
 {
@@ -135,7 +175,10 @@ boot_type(struct sl_interpreter_state *state)
 void
 sl_init_type(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "super", sl_super, 1, sl_list(state, 1, state->tType));
-        sl_define_function(state, "abstract?", sl_abstract, 1, sl_list(state, 1, state->tType));
-        sl_define_function(state, "type", type_of, 1, sl_list(state, 1, state->tAny));
+        sl_define_function(state, "super", sl_super, sl_list(state, 1, state->tType));
+        sl_define_function(state, "abstract?", sl_abstract, sl_list(state, 1, state->tType));
+        sl_define_function(state, "type", type_of, sl_list(state, 1, state->tAny));
+
+        /* TODO: Fix temporary hack. Apply-type should take any number of arguments */
+        sl_define_function(state, "apply-type", sl_apply_type, sl_list(state, 3, state->tType, state->s_ampersand, state->tType));
 }
