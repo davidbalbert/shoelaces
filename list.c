@@ -231,13 +231,18 @@ sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value ite
 void
 boot_list(struct sl_interpreter_state *state)
 {
-        state->tList = boot_type_new(state, sl_string_new(state, "List"));
         state->sl_empty_list = sl_empty_list_new(state);
+        state->tList = boot_abstract_type_new(state, sl_string_new(state, "List"), NULL);
+
+        /* TODO: Make this actually be List{None} */
+        SL_BASIC(state->sl_empty_list)->type = state->tList;
 }
 
 void
 sl_init_list(struct sl_interpreter_state *state)
 {
+        SL_TYPE(state->tList)->parameters = sl_list(state, 1, sl_intern(state, "T"));
+
         sl_define_function(state, "first", sl_first, sl_list(state, 1, state->tList));
         sl_define_function(state, "second", sl_second, sl_list(state, 1, state->tList));
         sl_define_function(state, "third", sl_third, sl_list(state, 1, state->tList));

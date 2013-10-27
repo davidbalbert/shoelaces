@@ -135,12 +135,14 @@ sl_destroy(struct sl_interpreter_state *state)
 int
 env_has_key(struct sl_interpreter_state *state, sl_value environment, sl_value name)
 {
+        assert(sl_type(name) == state->tSymbol);
         return sl_alist_has_key(state, environment, name) == state->sl_true;
 }
 
 sl_value
 env_get(struct sl_interpreter_state *state, sl_value environment, sl_value name)
 {
+        assert(sl_type(name) == state->tSymbol);
         return sl_alist_get(state, environment, name);
 }
 

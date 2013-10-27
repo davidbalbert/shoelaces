@@ -25,7 +25,6 @@ struct SLType
         sl_value name; /* String */
         sl_value super; /* Type */
         sl_value parameters; /* List */
-        size_t arity;
         unsigned int abstract:1;
 };
 
@@ -129,6 +128,7 @@ struct sl_interpreter_state {
 
         sl_value tType;
         sl_value tAny;
+        sl_value tNone;
         sl_value tSymbol;
         sl_value tInteger;
         sl_value tBoolean;

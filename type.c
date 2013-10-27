@@ -2,13 +2,14 @@
 #include "internal.h"
 
 static sl_value
-type_new(struct sl_interpreter_state *state, sl_value name, unsigned int abstract)
+type_new(struct sl_interpreter_state *state, sl_value name, unsigned int abstract, sl_value parameters)
 {
         sl_value t = sl_gc_alloc(state, sizeof(struct SLType));
         SL_BASIC(t)->type = state->tType;
         SL_TYPE(t)->name = name;
         SL_TYPE(t)->super = state->tAny;
         SL_TYPE(t)->abstract = abstract;
+        SL_TYPE(t)->parameters = parameters;
 
         return t;
 }
@@ -16,7 +17,7 @@ type_new(struct sl_interpreter_state *state, sl_value name, unsigned int abstrac
 sl_value
 sl_type_new(struct sl_interpreter_state *state, sl_value name)
 {
-        sl_value t = type_new(state, name, 0);
+        sl_value t = type_new(state, name, 0, state->sl_empty_list);
 
         sl_def(state, sl_intern_string(state, name), t);
         return t;
@@ -25,7 +26,7 @@ sl_type_new(struct sl_interpreter_state *state, sl_value name)
 sl_value
 sl_abstract_type_new(struct sl_interpreter_state *state, sl_value name)
 {
-        sl_value t = type_new(state, name, 1);
+        sl_value t = type_new(state, name, 1, state->sl_empty_list);
 
         sl_def(state, sl_intern_string(state, name), t);
         return t;
@@ -35,14 +36,14 @@ sl_abstract_type_new(struct sl_interpreter_state *state, sl_value name)
 sl_value
 boot_type_new(struct sl_interpreter_state *state, sl_value name)
 {
-        sl_value t = type_new(state, name, 0);
+        sl_value t = type_new(state, name, 0, state->sl_empty_list);
         return t;
 }
 
 sl_value
-boot_abstract_type_new(struct sl_interpreter_state *state, sl_value name)
+boot_abstract_type_new(struct sl_interpreter_state *state, sl_value name, sl_value type_variables)
 {
-        sl_value t = type_new(state, name, 1);
+        sl_value t = type_new(state, name, 1, type_variables);
         return t;
 }
 
@@ -62,9 +63,9 @@ sl_type(sl_value object)
 }
 
 static size_t
-type_arity(sl_value type)
+type_arity(struct sl_interpreter_state *state, sl_value type)
 {
-        return SL_TYPE(type)->arity;
+        return NUM2INT(sl_list_size(state, SL_TYPE(type)->parameters));
 }
 
 sl_value
@@ -75,10 +76,15 @@ sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_val
                 abort();
         }
 
-        if (type_arity(abstract_type) != NUM2INT(sl_list_size(state, type_parameters))) {
+        if (!SL_TYPE(abstract_type)->abstract) {
+                fprintf(stderr, "Error: You can't parameterize concrete type %s\n", sl_string_cstring(state, sl_inspect(state, abstract_type)));
+                abort();
+        }
+
+        if (type_arity(state, abstract_type) != NUM2INT(sl_list_size(state, type_parameters))) {
                 fprintf(stderr, "%s takes %ld type parameters, but %ld supplied\n",
                                 sl_string_cstring(state, sl_inspect(state, abstract_type)),
-                                type_arity(abstract_type),
+                                type_arity(state, abstract_type),
                                 NUM2INT(sl_list_size(state, type_parameters)));
                 abort();
         }
@@ -89,12 +95,11 @@ sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_val
         type_name = sl_string_concat(state, type_name, sl_list_join(state, type_parameters, sl_string_new(state, " ")));
         type_name = sl_string_concat(state, type_name, sl_string_new(state, "}"));
 
-        if (env_has_key(state, state->global_env, type_name)) {
-                return env_get(state, state->global_env, type_name);
+        if (env_has_key(state, state->global_env, sl_intern_string(state, type_name))) {
+                return env_get(state, state->global_env, sl_intern_string(state, type_name));
         } else {
                 sl_value type = sl_type_new(state, type_name);
                 SL_TYPE(type)->super = abstract_type;
-                SL_TYPE(type)->arity = 0;
                 SL_TYPE(type)->parameters = type_parameters;
 
                 return type;
@@ -166,7 +171,8 @@ boot_type(struct sl_interpreter_state *state)
         state->tType = boot_type_new(state, sl_string_new(state, "Type"));
         SL_BASIC(state->tType)->type = state->tType;
 
-        state->tAny = boot_abstract_type_new(state, sl_string_new(state, "Any"));
+        state->tAny = boot_abstract_type_new(state, sl_string_new(state, "Any"), NULL);
+        state->tNone = boot_abstract_type_new(state, sl_string_new(state, "None"), NULL);
 
         SL_TYPE(state->tAny)->super = NULL;
         SL_TYPE(state->tType)->super = state->tAny;
@@ -175,10 +181,12 @@ boot_type(struct sl_interpreter_state *state)
 void
 sl_init_type(struct sl_interpreter_state *state)
 {
+        SL_TYPE(state->tAny)->parameters = state->sl_empty_list;
+        SL_TYPE(state->tNone)->parameters = state->sl_empty_list;
+
         sl_define_function(state, "super", sl_super, sl_list(state, 1, state->tType));
         sl_define_function(state, "abstract?", sl_abstract, sl_list(state, 1, state->tType));
         sl_define_function(state, "type", type_of, sl_list(state, 1, state->tAny));
 
-        /* TODO: Fix temporary hack. Apply-type should take any number of arguments */
         sl_define_function(state, "apply-type", sl_apply_type, sl_list(state, 3, state->tType, state->s_ampersand, state->tType));
 }
