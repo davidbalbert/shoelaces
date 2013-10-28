@@ -92,8 +92,12 @@ mark(struct sl_interpreter_state *state, sl_value value)
 
         if (state->tType == type) {
                 mark(state, SL_TYPE(value)->name);
+                mark(state, SL_TYPE(value)->super);
+                mark(state, SL_TYPE(value)->parameters);
         } else if (state->tSymbol == type) {
                 mark(state, SL_SYMBOL(value)->name);
+        } else if (state->tKeyword == type) {
+                mark(state, SL_KEYWORD(value)->name);
         } else if (state->tList == type) {
                 mark(state, SL_LIST(value)->first);
                 mark(state, SL_LIST(value)->rest);
@@ -102,6 +106,7 @@ mark(struct sl_interpreter_state *state, sl_value value)
                 mark(state, SL_FUNCTION(value)->method_table);
         } else if (state->tMethodTable == type) {
                 mark(state, SL_METHOD_TABLE(value)->method);
+                mark(state, SL_METHOD_TABLE(value)->varargs_method);
                 mark(state, SL_METHOD_TABLE(value)->method_map);
         } else if (state->tMethod == type) {
                 mark(state, SL_METHOD(value)->signature);
