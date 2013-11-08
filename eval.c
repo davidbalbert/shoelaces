@@ -50,6 +50,7 @@ void sl_init_keyword(struct sl_interpreter_state *state);
 void sl_init_number(struct sl_interpreter_state *state);
 void sl_init_boolean(struct sl_interpreter_state *state);
 void sl_init_function(struct sl_interpreter_state *state);
+void sl_init_io(struct sl_interpreter_state *state);
 void sl_init_eval(struct sl_interpreter_state *state);
 void sl_init_gc(struct sl_interpreter_state *state);
 void sl_init_reader(struct sl_interpreter_state *state);
@@ -63,6 +64,7 @@ sl_init()
         state->keyword_table = kh_init(str);
 
         sl_init_gc(state);
+        sl_gc_disable(state);
 
         /* The order of these next three function calls is
          * important.  Because type names are strings, and
@@ -116,10 +118,13 @@ sl_init()
 
         /* initialize other types here */
         sl_init_number(state);
+        sl_init_io(state);
         sl_init_eval(state);
 
         /* initialize the reader */
         sl_init_reader(state);
+
+        sl_gc_enable(state);
 
         return state;
 }
@@ -128,25 +133,27 @@ void
 sl_destroy(struct sl_interpreter_state *state)
 {
         kh_destroy(str, state->symbol_table);
+        kh_destroy(str, state->keyword_table);
+        sl_free_keep_list(state->keep_list, NULL);
         sl_gc_free_all(state);
         free(state);
 }
 
 int
-env_has_key(struct sl_interpreter_state *state, sl_value environment, sl_value name)
+sl_env_has_key(struct sl_interpreter_state *state, sl_value environment, sl_value name)
 {
         assert(sl_type(name) == state->tSymbol);
         return sl_alist_has_key(state, environment, name) == state->sl_true;
 }
 
 sl_value
-env_get(struct sl_interpreter_state *state, sl_value environment, sl_value name)
+sl_env_get(struct sl_interpreter_state *state, sl_value environment, sl_value name)
 {
         assert(sl_type(name) == state->tSymbol);
         return sl_alist_get(state, environment, name);
 }
 
-sl_value
+static sl_value
 eval_each(struct sl_interpreter_state *state, sl_value args, sl_value environment)
 {
         assert(sl_type(args) == state->tList);
@@ -164,8 +171,8 @@ sl_value
 sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment)
 {
         if (sl_type(expression) == state->tSymbol) {
-                if (env_has_key(state, environment, expression)) {
-                        return env_get(state, environment, expression);
+                if (sl_env_has_key(state, environment, expression)) {
+                        return sl_env_get(state, environment, expression);
                 } else {
                         fprintf(stderr, "Error: `%s' is undefined\n", sl_string_cstring(state, sl_inspect(state, expression)));
                         abort();

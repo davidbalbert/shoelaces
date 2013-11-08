@@ -95,8 +95,8 @@ sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_val
         type_name = sl_string_concat(state, type_name, sl_list_join(state, type_parameters, sl_string_new(state, " ")));
         type_name = sl_string_concat(state, type_name, sl_string_new(state, "}"));
 
-        if (env_has_key(state, state->global_env, sl_intern_string(state, type_name))) {
-                return env_get(state, state->global_env, sl_intern_string(state, type_name));
+        if (sl_env_has_key(state, state->global_env, sl_intern_string(state, type_name))) {
+                return sl_env_get(state, state->global_env, sl_intern_string(state, type_name));
         } else {
                 sl_value type = sl_type_new(state, type_name);
                 SL_TYPE(type)->super = abstract_type;

@@ -271,8 +271,8 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
         sl_value func_name = sl_intern(state, name);
         sl_value func;
 
-        if (env_has_key(state, state->global_env, func_name)) {
-                func = env_get(state, state->global_env, func_name);
+        if (sl_env_has_key(state, state->global_env, func_name)) {
+                func = sl_env_get(state, state->global_env, func_name);
 
                 if (sl_type(func) != state->tFunction) {
                         fprintf(stderr, "Error: `%s' is already defined but is not a function.\n", sl_string_cstring(state, sl_inspect(state, func_name)));
@@ -284,7 +284,7 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
 
         add_method(state, func, method_body, type_list);
 
-        if (!env_has_key(state, state->global_env, func_name)) {
+        if (!sl_env_has_key(state, state->global_env, func_name)) {
                 sl_def(state, func_name, func);
         }
 }
@@ -502,7 +502,14 @@ sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
         sl_value method = method_for_arguments(state, func, args);
 
         if (method_is_cfunc(state, method)) {
-                return SL_METHOD(method)->invoker(state, method, args);
+                struct sl_keep_list *old = state->keep_list;
+
+                sl_value val = SL_METHOD(method)->invoker(state, method, args);
+
+                sl_free_keep_list(state->keep_list, old);
+                state->keep_list = old;
+
+                return val;
         } else {
                 fprintf(stderr, "Error: only cfuncs are supported at the moment.\n");
                 abort();

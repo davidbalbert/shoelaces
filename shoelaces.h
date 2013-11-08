@@ -118,11 +118,17 @@ struct SLMethod
 /* interpreter state and setup */
 KHASH_MAP_INIT_STR(str, sl_value);
 
+struct sl_keep_list {
+        sl_value first;
+        struct sl_keep_list *rest;
+};
+
 struct sl_interpreter_state {
         khash_t(str) *symbol_table;
         khash_t(str) *keyword_table;
 
         struct sl_heap *heap;
+        struct sl_keep_list *keep_list; /* temp variables on the C stack */
 
         sl_value global_env;
 
@@ -148,6 +154,8 @@ struct sl_interpreter_state {
         sl_value s_if;
         sl_value s_annotate;
         sl_value s_ampersand;
+
+        int gc_enabled;
 };
 
 struct sl_interpreter_state *sl_init();

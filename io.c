@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 static sl_value
 generic_inspect(struct sl_interpreter_state *state, sl_value val)
@@ -48,16 +49,22 @@ sl_inspect(struct sl_interpreter_state *state, sl_value val)
         return str;
 }
 
+sl_value
+p(struct sl_interpreter_state *state, sl_value val)
+{
+        printf("%s\n", sl_string_cstring(state, sl_inspect(state, val)));
+        return val;
+}
+
 void
 sl_p(struct sl_interpreter_state *state, sl_value val)
 {
-        printf("%s\n", sl_string_cstring(state, sl_inspect(state, val)));
+        sl_value f = sl_env_get(state, state->global_env, sl_intern(state, "p"));
+        sl_apply(state, f, sl_list(state, 1, val));
 }
 
 void
 sl_init_io(struct sl_interpreter_state *state)
 {
-        /*
-        sl_define_function(state, "p", sl_p, 1, sl_list(state, 1, state->iAny);
-        */
+        sl_define_function(state, "p", p, sl_list(state, 1, state->tAny));
 }

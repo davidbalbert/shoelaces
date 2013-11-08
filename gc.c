@@ -18,6 +18,18 @@ sl_gc_heap_size(struct sl_interpreter_state *state)
 }
 
 void
+sl_gc_enable(struct sl_interpreter_state *state)
+{
+        state->gc_enabled = 1;
+}
+
+void
+sl_gc_disable(struct sl_interpreter_state *state)
+{
+        state->gc_enabled = 0;
+}
+
+void
 sl_gc_run(struct sl_interpreter_state *state)
 {
         sl_value *roots;
@@ -32,6 +44,13 @@ sl_gc_run(struct sl_interpreter_state *state)
         }
 
         free(roots);
+
+        struct sl_keep_list *kl = state->keep_list;
+
+        while (kl != NULL) {
+                mark(state, kl->first);
+                kl = kl->rest;
+        }
 
         sweep_all(state);
 }
@@ -150,18 +169,25 @@ sl_value
 sl_gc_alloc(struct sl_interpreter_state *state, size_t size)
 {
         sl_value *slot = find_free_slot(state);
-        if (!slot) {
+        if (!slot && state->gc_enabled) {
                 sl_gc_run(state);
                 slot = find_free_slot(state);
+        }
 
-                if (!slot) {
-                        increase_heap_size(state);
-                        return sl_gc_alloc(state, size);
-                }
+        if (!slot) {
+                increase_heap_size(state);
+                return sl_gc_alloc(state, size);
         }
 
         *slot = (sl_value)sl_native_malloc(size);
         state->heap->size++;
+
+        if (state->gc_enabled) {
+                struct sl_keep_list *kl = (struct sl_keep_list *)sl_native_malloc(size);
+                kl->first = *slot;
+                kl->rest = state->keep_list;
+                state->keep_list = kl;
+        }
 
         return *slot;
 }
@@ -192,6 +218,18 @@ sl_gc_free_all(struct sl_interpreter_state *state)
         }
 
         assert(heap->size == 0);
+}
+
+void
+sl_free_keep_list(struct sl_keep_list *start, struct sl_keep_list *end)
+{
+        struct sl_keep_list *tmp;
+
+        while (start != end) {
+                tmp = start->rest;
+                free(start);
+                start = tmp;
+        }
 }
 
 static sl_value *
@@ -265,6 +303,8 @@ sl_init_gc(struct sl_interpreter_state *state)
 {
         struct sl_heap *heap;
         state->heap = heap = (struct sl_heap *)sl_native_malloc(sizeof(struct sl_heap));
+        state->keep_list = NULL;
+        state->gc_enabled = 1;
 
         heap->capacity = INITIAL_HEAP_CAPACITY;
         heap->size = 0;
