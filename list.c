@@ -221,6 +221,29 @@ sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value ite
         }
 }
 
+static sl_value
+concat_2(struct sl_interpreter_state *state, sl_value l1, sl_value l2)
+{
+        if (l1 == state->sl_empty_list) {
+                return l2;
+        } else {
+                return sl_list_new(state, sl_first(state, l1), concat_2(state, sl_rest(state, l1), l2));
+        }
+}
+
+sl_value
+sl_list_concat(struct sl_interpreter_state *state, sl_value lists)
+{
+        sl_value ret = state->sl_empty_list;
+
+        lists = sl_reverse(state, lists);
+
+        for (sl_value l = lists; l != state->sl_empty_list; l = sl_rest(state, l)) {
+                ret = concat_2(state, sl_first(state, l), ret);
+        }
+
+        return ret;
+}
 
 /* NOTE: This function is needed so that all required types can be set up
  * before we start adding things to the environment. If in doubt, you should
@@ -255,4 +278,5 @@ sl_init_list(struct sl_interpreter_state *state)
         sl_define_function(state, "join", sl_empty, sl_list(state, 2, state->tList, state->tString));
         sl_define_function(state, "contains?", sl_list_contains, sl_list(state, 2, state->tList, state->tAny));
         sl_define_function(state, "inspect", list_inspect, sl_list(state, 1, state->tList));
+        sl_define_function(state, "concat", sl_list_concat, sl_list(state, 2, state->s_ampersand, state->tList));
 }
