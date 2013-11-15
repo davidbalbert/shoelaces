@@ -251,9 +251,6 @@ test_gc()
 
         sl_gc_run(state);
 
-        printf("old: %ld\n", old_object_count);
-        printf("new: %ld\n", sl_gc_heap_size(state));
-
         assert(sl_gc_heap_size(state) == old_object_count);
 
         sl_destroy(state);
@@ -468,14 +465,6 @@ test_eval_parametric_type()
         sl_destroy(state);
 }
 
-void
-test_sl_p_bug()
-{
-        struct sl_interpreter_state *state = sl_init();
-        sl_p(state, state->global_env);
-        sl_destroy(state);
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -511,8 +500,6 @@ main(int argc, char *argv[])
 
         test_eval_function_call();
         /*test_eval_eval();*/
-
-        test_sl_p_bug();
 
         printf("Tests passed!\n");
         return 0;
