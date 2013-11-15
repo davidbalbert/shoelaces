@@ -175,18 +175,6 @@ sl_value sl_type(sl_value object);
 sl_value sl_apply_type(struct sl_interpreter_state *state, sl_value abstract_type, sl_value type_parameters);
 sl_value sl_types(struct sl_interpreter_state *state, sl_value values);
 
-/* inspection */
-sl_value sl_type_inspect(struct sl_interpreter_state *state, sl_value type);
-sl_value sl_integer_inspect(struct sl_interpreter_state *state, sl_value integer);
-sl_value sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol);
-sl_value sl_keyword_inspect(struct sl_interpreter_state *state, sl_value keyword);
-sl_value sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean);
-sl_value sl_list_inspect(struct sl_interpreter_state *state, sl_value list);
-sl_value sl_string_inspect(struct sl_interpreter_state *state, sl_value string);
-sl_value sl_function_inspect(struct sl_interpreter_state *state, sl_value func);
-sl_value sl_method_table_inspect(struct sl_interpreter_state *state, sl_value method_table);
-sl_value sl_method_inspect(struct sl_interpreter_state *state, sl_value method);
-
 /* equality */
 sl_value sl_equal(struct sl_interpreter_state *state, sl_value a, sl_value b);
 

@@ -120,8 +120,8 @@ sl_types(struct sl_interpreter_state *state, sl_value values)
         }
 }
 
-sl_value
-sl_type_inspect(struct sl_interpreter_state *state, sl_value type)
+static sl_value
+type_inspect(struct sl_interpreter_state *state, sl_value type)
 {
         assert(sl_type(type) == state->tType);
         return SL_TYPE(type)->name;
@@ -189,4 +189,6 @@ sl_init_type(struct sl_interpreter_state *state)
         sl_define_function(state, "type", type_of, sl_list(state, 1, state->tAny));
 
         sl_define_function(state, "apply-type", sl_apply_type, sl_list(state, 3, state->tType, state->s_ampersand, state->tType));
+
+        sl_define_function(state, "inspect", type_inspect, sl_list(state, 1, state->tType));
 }

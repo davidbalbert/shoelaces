@@ -344,8 +344,8 @@ add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_
         }
 }
 
-sl_value
-sl_function_inspect(struct sl_interpreter_state *state, sl_value func)
+static sl_value
+function_inspect(struct sl_interpreter_state *state, sl_value func)
 {
         if (SL_FUNCTION(func)->name == NULL) {
                 return sl_string_new(state, "#<Function (anonymous)>");
@@ -357,8 +357,8 @@ sl_function_inspect(struct sl_interpreter_state *state, sl_value func)
         }
 }
 
-sl_value
-sl_method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
+static sl_value
+method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
 {
         struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
         sl_value s = sl_string_new(state, "#<MethodTable method: ");
@@ -375,8 +375,8 @@ sl_method_table_inspect(struct sl_interpreter_state *state, sl_value method_tabl
         return s;
 }
 
-sl_value
-sl_method_inspect(struct sl_interpreter_state *state, sl_value method)
+static sl_value
+method_inspect(struct sl_interpreter_state *state, sl_value method)
 {
         struct SLMethod *m = SL_METHOD(method);
         sl_value s = sl_string_new(state, "#<Method ");
@@ -526,4 +526,9 @@ sl_init_function(struct sl_interpreter_state *state)
          * internal type. Maybe we'll do something about that, but for now, we
          * need it in the environment so that we can mark it. */
         state->tMethodTable = sl_type_new(state, sl_string_new(state, "MethodTable"));
+
+        sl_define_function(state, "inspect", function_inspect, sl_list(state, 1, state->tFunction));
+        sl_define_function(state, "inspect", method_inspect, sl_list(state, 1, state->tMethod));
+        sl_define_function(state, "inspect", method_table_inspect, sl_list(state, 1, state->tMethodTable));
+
 }

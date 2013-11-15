@@ -10,8 +10,8 @@ sl_value new_boolean(struct sl_interpreter_state *state, char value)
         return b;
 }
 
-sl_value
-sl_boolean_inspect(struct sl_interpreter_state *state, sl_value boolean)
+static sl_value
+boolean_inspect(struct sl_interpreter_state *state, sl_value boolean)
 {
         assert(sl_type(boolean) == state->tBoolean);
         if (SL_BOOLEAN(boolean)->value)
@@ -37,4 +37,5 @@ boot_boolean(struct sl_interpreter_state *state)
 void
 sl_init_boolean(struct sl_interpreter_state *state)
 {
+        sl_define_function(state, "inspect", boolean_inspect, sl_list(state, 1, state->tBoolean));
 }

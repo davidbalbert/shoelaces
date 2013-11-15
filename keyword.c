@@ -58,8 +58,8 @@ sl_intern_keyword(struct sl_interpreter_state *state, char *name)
         }
 }
 
-sl_value
-sl_keyword_inspect(struct sl_interpreter_state *state, sl_value keyword)
+static sl_value
+keyword_inspect(struct sl_interpreter_state *state, sl_value keyword)
 {
         assert(sl_type(keyword) == state->tKeyword);
         return sl_string_concat(state, sl_string_new(state, ":"), SL_KEYWORD(keyword)->name);
@@ -80,4 +80,5 @@ boot_keyword(struct sl_interpreter_state *state)
 void
 sl_init_keyword(struct sl_interpreter_state *state)
 {
+        sl_define_function(state, "inspect", keyword_inspect, sl_list(state, 1, state->tKeyword));
 }

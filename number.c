@@ -10,8 +10,8 @@ sl_integer_new(struct sl_interpreter_state *state, int i)
         return n;
 }
 
-sl_value
-sl_integer_inspect(struct sl_interpreter_state *state, sl_value integer)
+static sl_value
+integer_inspect(struct sl_interpreter_state *state, sl_value integer)
 {
         char inspect_str[CHAR_BIT * sizeof(long)];
 
@@ -32,4 +32,6 @@ void
 sl_init_number(struct sl_interpreter_state *state)
 {
         state->tInteger = sl_type_new(state, sl_string_new(state, "Integer"));
+
+        sl_define_function(state, "inspect", integer_inspect, sl_list(state, 1, state->tInteger));
 }

@@ -19,34 +19,8 @@ generic_inspect(struct sl_interpreter_state *state, sl_value val)
 sl_value
 sl_inspect(struct sl_interpreter_state *state, sl_value val)
 {
-        sl_value type = sl_type(val);
-        sl_value str;
-
-        if (state->tType == type) {
-                str = sl_type_inspect(state, val);
-        } else if (state->tInteger == type) {
-                str = sl_integer_inspect(state, val);
-        } else if (state->tSymbol == type) {
-                str = sl_symbol_inspect(state, val);
-        } else if (state->tKeyword == type) {
-                str = sl_keyword_inspect(state, val);
-        } else if (state->tBoolean == type) {
-                str = sl_boolean_inspect(state, val);
-        } else if (state->tList == type) {
-                str = sl_list_inspect(state, val);
-        } else if (state->tString == type) {
-                str = sl_string_inspect(state, val);
-        } else if (state->tFunction == type) {
-                str = sl_function_inspect(state, val);
-        } else if (state->tMethodTable == type) {
-                str = sl_method_table_inspect(state, val);
-        } else if (state->tMethod == type) {
-                str = sl_method_inspect(state, val);
-        } else {
-                str = generic_inspect(state, val);
-        }
-
-        return str;
+        sl_value f = sl_env_get(state, state->global_env, sl_intern(state, "inspect"));
+        return sl_apply(state, f, sl_list(state, 1, val));
 }
 
 sl_value
@@ -67,4 +41,5 @@ void
 sl_init_io(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "p", p, sl_list(state, 1, state->tAny));
+        sl_define_function(state, "inspect", generic_inspect, sl_list(state, 1, state->tAny));
 }

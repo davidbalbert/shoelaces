@@ -12,8 +12,8 @@ sl_alloc_list(struct sl_interpreter_state *state, sl_value first, sl_value rest,
         return l;
 }
 
-sl_value
-sl_list_inspect(struct sl_interpreter_state *state, sl_value list)
+static sl_value
+list_inspect(struct sl_interpreter_state *state, sl_value list)
 {
         sl_value str;
 
@@ -254,4 +254,5 @@ sl_init_list(struct sl_interpreter_state *state)
         sl_define_function(state, "empty?", sl_empty, sl_list(state, 1, state->tList));
         sl_define_function(state, "join", sl_empty, sl_list(state, 2, state->tList, state->tString));
         sl_define_function(state, "contains?", sl_list_contains, sl_list(state, 2, state->tList, state->tAny));
+        sl_define_function(state, "inspect", list_inspect, sl_list(state, 1, state->tList));
 }

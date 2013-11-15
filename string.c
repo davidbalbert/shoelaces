@@ -47,8 +47,8 @@ sl_string_cstring(struct sl_interpreter_state *state, sl_value string)
         return SL_STRING(string)->value;
 }
 
-sl_value
-sl_string_inspect(struct sl_interpreter_state *state, sl_value string)
+static sl_value
+string_inspect(struct sl_interpreter_state *state, sl_value string)
 {
         assert(sl_type(string) == state->tString);
         char *str = sl_native_malloc((NUM2INT(sl_string_size(state, string)) + 1) * sizeof(char));
@@ -96,4 +96,5 @@ sl_init_string(struct sl_interpreter_state *state)
         sl_define_function(state, "concat", sl_string_size, sl_list(state, 2, state->tString, state->tString));
 
         sl_define_function(state, "empty?", sl_string_empty, sl_list(state, 1, state->tString));
+        sl_define_function(state, "inspect", string_inspect, sl_list(state, 1, state->tString));
 }

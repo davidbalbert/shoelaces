@@ -33,8 +33,8 @@ sl_value new_symbol(struct sl_interpreter_state *state, sl_value name)
         return sym;
 }
 
-sl_value
-sl_symbol_inspect(struct sl_interpreter_state *state, sl_value symbol)
+static sl_value
+symbol_inspect(struct sl_interpreter_state *state, sl_value symbol)
 {
         assert(sl_type(symbol) == state->tSymbol);
         return SL_SYMBOL(symbol)->name;
@@ -63,4 +63,5 @@ void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "intern", sl_intern_string, sl_list(state, 1, state->tString));
+        sl_define_function(state, "inspect", symbol_inspect, sl_list(state, 1, state->tSymbol));
 }
