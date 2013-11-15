@@ -93,7 +93,7 @@ sl_init_string(struct sl_interpreter_state *state)
         sl_define_function(state, "size", sl_string_size, sl_list(state, 1, state->tString));
 
         /* TODO: concat should take an arbitrary number of arguments */
-        sl_define_function(state, "concat", sl_string_size, sl_list(state, 2, state->tString, state->tString));
+        sl_define_function(state, "concat", sl_string_concat, sl_list(state, 2, state->tString, state->tString));
 
         sl_define_function(state, "empty?", sl_string_empty, sl_list(state, 1, state->tString));
         sl_define_function(state, "inspect", string_inspect, sl_list(state, 1, state->tString));
