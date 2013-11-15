@@ -1,4 +1,5 @@
 #include "shoelaces.h"
+#include "internal.h"
 
 #define MAX_INPUT_SIZE 8192
 
@@ -20,8 +21,13 @@ main(int argc, char *argv[])
                         break;
                 }
 
+                struct sl_keep_list *old = state->keep_list;
+
                 in = sl_read(state, input_string);
                 out = sl_eval(state, in, state->global_env);
+
+                sl_free_keep_list(state->keep_list, old);
+                state->keep_list = old;
 
                 sl_p(state, out);
         }

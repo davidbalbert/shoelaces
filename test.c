@@ -189,7 +189,7 @@ test_read_type_expression()
         sl_value actual = sl_read(state, "Foo{Bar}");
         sl_value expected = sl_list(state, 3, sl_intern(state, "apply-type"), sl_intern(state, "Foo"), sl_intern(state, "Bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
         sl_destroy(state);
 }
@@ -202,31 +202,31 @@ test_read_annotation_expression()
         sl_value actual = sl_read(state, "foo:bar");
         sl_value expected = sl_list(state, 3, sl_intern(state, ":"), sl_intern(state, "foo"), sl_intern(state, "bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
 
         actual = sl_read(state, ":foo:bar");
         expected = sl_list(state, 3, sl_intern(state, ":"), sl_intern_keyword(state, "foo"), sl_intern(state, "bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
 
         actual = sl_read(state, "42:bar");
         expected = sl_list(state, 3, sl_intern(state, ":"), sl_integer_new(state, 42), sl_intern(state, "bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
 
         actual = sl_read(state, "\"hello\":bar");
         expected = sl_list(state, 3, sl_intern(state, ":"), sl_string_new(state, "hello"), sl_intern(state, "bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
 
         actual = sl_read(state, "(a list):bar");
         expected = sl_list(state, 3, sl_intern(state, ":"), sl_list(state, 2, sl_intern(state, "a"), sl_intern(state, "list")), sl_intern(state, "bar"));
 
-        assert(sl_equals(state, expected, actual) == state->sl_true);
+        assert(sl_equal(state, expected, actual) == state->sl_true);
 
         sl_destroy(state);
 }
@@ -290,7 +290,7 @@ test_eval_string()
         sl_value in = sl_read(state, "\"hello, world\"");
         sl_value out = sl_eval(state, in, state->global_env);
 
-        assert(sl_equals(state, out, sl_string_new(state, "hello, world")) == state->sl_true);
+        assert(sl_equal(state, out, sl_string_new(state, "hello, world")) == state->sl_true);
 
         sl_destroy(state);
 }
@@ -445,7 +445,7 @@ test_eval_type_assertion()
         sl_value in = sl_read(state, "123:Integer");
         sl_value out = sl_eval(state, in, state->global_env);
 
-        assert(sl_equals(state, out, sl_integer_new(state, 123)) == state->sl_true);
+        assert(sl_equal(state, out, sl_integer_new(state, 123)) == state->sl_true);
 
         /* TODO: assert raises exception on bad annotation */
 

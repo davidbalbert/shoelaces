@@ -247,7 +247,7 @@ sl_identical(struct sl_interpreter_state *state, sl_value a, sl_value b)
 }
 
 sl_value
-sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
+sl_equal(struct sl_interpreter_state *state, sl_value a, sl_value b) {
         if (a == b) {
                 return state->sl_true;
         }
@@ -271,11 +271,11 @@ sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b) {
                 sl_value first_a = sl_first(state, a);
                 sl_value first_b = sl_first(state, b);
 
-                if (sl_equals(state, first_a, first_b) == state->sl_true) {
+                if (sl_equal(state, first_a, first_b) == state->sl_true) {
                         sl_value rest_a = sl_rest(state, a);
                         sl_value rest_b = sl_rest(state, b);
 
-                        return sl_equals(state, rest_a, rest_b);
+                        return sl_equal(state, rest_a, rest_b);
                 } else {
                         return state->sl_false;
                 }
@@ -288,5 +288,5 @@ void
 sl_init_eval(struct sl_interpreter_state *state)
 {
         sl_define_function(state, "identical?", sl_identical, sl_list(state, 2, state->tAny, state->tAny));
-        sl_define_function(state, "equals?", sl_equals, sl_list(state, 2, state->tAny, state->tAny));
+        sl_define_function(state, "=", sl_equal, sl_list(state, 2, state->tAny, state->tAny));
 }

@@ -188,7 +188,7 @@ sl_value sl_method_table_inspect(struct sl_interpreter_state *state, sl_value me
 sl_value sl_method_inspect(struct sl_interpreter_state *state, sl_value method);
 
 /* equality */
-sl_value sl_equals(struct sl_interpreter_state *state, sl_value a, sl_value b);
+sl_value sl_equal(struct sl_interpreter_state *state, sl_value a, sl_value b);
 
 /* eval */
 sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value environment);

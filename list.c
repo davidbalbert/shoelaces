@@ -175,7 +175,7 @@ sl_alist_has_key(struct sl_interpreter_state *state, sl_value alist, sl_value ke
 {
         if (sl_empty(state, alist) == state->sl_true) {
                 return state->sl_false;
-        } else if (sl_equals(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
+        } else if (sl_equal(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
                 return state->sl_true;
         } else {
                 return sl_alist_has_key(state, sl_rest(state, alist), key);
@@ -189,7 +189,7 @@ sl_alist_get(struct sl_interpreter_state *state, sl_value alist, sl_value key)
                 /* TODO: raise exception instead of dying */
                 fprintf(stderr, "Error: alist does not contain %s\n", sl_string_cstring(state, sl_inspect(state, key)));
                 abort();
-        } else if (sl_equals(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
+        } else if (sl_equal(state, sl_first(state, sl_first(state, alist)), key) == state->sl_true) {
                 return sl_first(state, sl_rest(state, sl_first(state, alist)));
         } else {
                 return sl_alist_get(state, sl_rest(state, alist), key);
@@ -214,7 +214,7 @@ sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value ite
 {
         if (list == state->sl_empty_list) {
                 return state->sl_false;
-        } else if (sl_equals(state, item, sl_first(state, list)) == state->sl_true) {
+        } else if (sl_equal(state, item, sl_first(state, list)) == state->sl_true) {
                 return state->sl_true;
         } else {
                 return sl_list_contains(state, sl_rest(state, list), item);
