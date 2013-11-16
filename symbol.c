@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "shoelaces.h"
 #include "internal.h"
 

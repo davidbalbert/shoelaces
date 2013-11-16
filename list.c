@@ -1,3 +1,7 @@
+#include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #include "shoelaces.h"
 #include "internal.h"
 

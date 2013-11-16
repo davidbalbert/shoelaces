@@ -1,3 +1,8 @@
+#include <assert.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #include "shoelaces.h"
 
 struct sl_reader;
