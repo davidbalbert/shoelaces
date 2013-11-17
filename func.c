@@ -4,7 +4,10 @@
 #include "shoelaces.h"
 #include "internal.h"
 
-static void add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), sl_value type_list);
+static void add_c_method(struct sl_interpreter_state *state, sl_value func, sl_value signature, sl_value (*method_body)());
+static void add_lisp_method(struct sl_interpreter_state *state, sl_value func, sl_value signature, sl_value bodies, sl_value environment);
+static sl_value function_inspect(struct sl_interpreter_state *state, sl_value func);
+
 
 static sl_value
 method_table_new(struct sl_interpreter_state *state, sl_value function)
@@ -24,7 +27,7 @@ method_table_new(struct sl_interpreter_state *state, sl_value function)
 sl_value
 func_new(struct sl_interpreter_state *state, sl_value name)
 {
-        assert(sl_type(name) == state->tSymbol);
+        assert(name == NULL || sl_type(name) == state->tSymbol);
 
         sl_value f = sl_gc_alloc(state, sizeof(struct SLFunction));
         SL_BASIC(f)->type = state->tFunction;
@@ -238,8 +241,35 @@ signature_has_varargs(struct sl_interpreter_state *state, sl_value signature) {
         return ampersand_count == 1;
 }
 
-sl_value
-method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value (*method_body)(), sl_value signature)
+static sl_value
+method_new_lisp(struct sl_interpreter_state *state, sl_value function, sl_value signature, sl_value bodies, sl_value environment)
+{
+        assert(sl_type(function) == state->tFunction);
+        assert(sl_type(signature) == state->tList);
+        assert(sl_type(bodies) == state->tList);
+
+        int arg_count = NUM2INT(sl_list_size(state, signature));
+
+        int has_varargs = signature_has_varargs(state, signature);
+
+        if (has_varargs) {
+                arg_count--;
+        }
+
+        sl_value m = sl_gc_alloc(state, sizeof(struct SLMethod));
+        SL_BASIC(m)->type = state->tMethod;
+        SL_METHOD(m)->method_type = SL_METHOD_LISP;
+        SL_METHOD(m)->signature = signature;
+        SL_METHOD(m)->has_varargs = has_varargs;
+        SL_METHOD(m)->function = function;
+        SL_METHOD(m)->bodies = bodies;
+        SL_METHOD(m)->environment = environment;
+
+        return m;
+}
+
+static sl_value
+method_new_cfunc(struct sl_interpreter_state *state, sl_value function, sl_value signature, sl_value (*method_body)())
 {
         assert(sl_type(function) == state->tFunction);
         assert(sl_type(signature) == state->tList);
@@ -272,6 +302,19 @@ method_is_cfunc(struct sl_interpreter_state *state, sl_value method)
         return SL_METHOD(method)->method_type == SL_METHOD_CFUNC;
 }
 
+sl_value
+sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, sl_value environment)
+{
+        assert(sl_type(signature) == state->tList);
+        assert(sl_type(bodies) == state->tList);
+
+        sl_value func = func_new(state, NULL);
+
+        add_lisp_method(state, func, signature, bodies, environment);
+
+        return func;
+}
+
 void
 sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), sl_value type_list)
 {
@@ -289,7 +332,7 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
                 func = func_new(state, func_name);
         }
 
-        add_method(state, func, method_body, type_list);
+        add_c_method(state, func, type_list, method_body);
 
         if (!sl_env_has_key(state, state->global_env, func_name)) {
                 sl_def(state, func_name, func);
@@ -325,12 +368,8 @@ method_table_for_signature(struct sl_interpreter_state *state, sl_value method_t
 }
 
 static void
-add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), sl_value signature)
+add_method_to_method_table(sl_value method, sl_value method_table)
 {
-        sl_value m = method_new_cfunc(state, func, method_body, signature);
-
-        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature, func);
-
         /* TODO: Warn on signature prefix + varargs ambiguity. E.g.:
          * (Int & Int)
          * (Int & String)
@@ -344,11 +383,31 @@ add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_
          * (& Int)
          * */
 
-        if (SL_METHOD(m)->has_varargs) {
-                SL_METHOD_TABLE(method_table)->varargs_method = m;
+        if (SL_METHOD(method)->has_varargs) {
+                SL_METHOD_TABLE(method_table)->varargs_method = method;
         } else {
-                SL_METHOD_TABLE(method_table)->method = m;
+                SL_METHOD_TABLE(method_table)->method = method;
         }
+}
+
+static void
+add_lisp_method(struct sl_interpreter_state *state, sl_value func, sl_value signature, sl_value bodies, sl_value environment)
+{
+        sl_value m = method_new_lisp(state, func, signature, bodies, environment);
+
+        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature, func);
+
+        add_method_to_method_table(m, method_table);
+}
+
+static void
+add_c_method(struct sl_interpreter_state *state, sl_value func, sl_value signature, sl_value (*method_body)())
+{
+        sl_value m = method_new_cfunc(state, func, signature, method_body);
+
+        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature, func);
+
+        add_method_to_method_table(m, method_table);
 }
 
 static sl_value
@@ -364,16 +423,22 @@ function_name(struct sl_interpreter_state *state, sl_value func)
 }
 
 static sl_value
+function_name_or_inspect(struct sl_interpreter_state *state, sl_value func)
+{
+        if (SL_FUNCTION(func)->name) {
+                return SL_FUNCTION(func)->name;
+        } else {
+                return function_inspect(state, func);
+        }
+}
+
+static sl_value
 function_inspect(struct sl_interpreter_state *state, sl_value func)
 {
-        if (SL_FUNCTION(func)->name == NULL) {
-                return sl_string_new(state, "#<Function (anonymous)>");
-        } else {
-                sl_value s = sl_string_new(state, "#<Function ");
-                s = sl_string_concat(state, s, sl_inspect(state, SL_FUNCTION(func)->name));
-                s = sl_string_concat(state, s, sl_string_new(state, ">"));
-                return s;
-        }
+        sl_value s = sl_string_new(state, "#<Function ");
+        s = sl_string_concat(state, s, function_name(state, func));
+        s = sl_string_concat(state, s, sl_string_new(state, ">"));
+        return s;
 }
 
 static sl_value
@@ -410,7 +475,7 @@ method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
 
         sl_value methods = method_list(state, method_table);
         sl_value s = sl_string_new(state, "Methods for function \"");
-        s = sl_string_concat(state, s, function_name(state, mt->function));
+        s = sl_string_concat(state, s, function_name_or_inspect(state, mt->function));
         s = sl_string_concat(state, s, sl_string_new(state, "\":\n"));
         s = sl_string_concat(state, s, sl_list_join(state, methods, sl_string_new(state, "\n")));
 
@@ -422,7 +487,7 @@ method_inspect(struct sl_interpreter_state *state, sl_value method)
 {
         struct SLMethod *m = SL_METHOD(method);
         sl_value s = sl_string_new(state, "(");
-        s = sl_string_concat(state, s, function_name(state, m->function));
+        s = sl_string_concat(state, s, function_name_or_inspect(state, m->function));
         s = sl_string_concat(state, s, sl_string_new(state, " "));
         s = sl_string_concat(state, s, sl_list_join(state, m->signature, sl_string_new(state, " ")));
         s = sl_string_concat(state, s, sl_string_new(state, ")"));

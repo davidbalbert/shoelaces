@@ -1,3 +1,6 @@
+#include <assert.h>
+#include <stdio.h>
+
 #include "shoelaces.h"
 #include "internal.h"
 
@@ -465,6 +468,19 @@ test_eval_parametric_type()
         sl_destroy(state);
 }
 
+void
+test_anonymous_function()
+{
+        struct sl_interpreter_state *state = sl_init();
+
+        sl_value in = sl_read(state, "((fn (a:Integer) a) 42)");
+        sl_value out = sl_eval(state, in, state->global_env);
+
+        assert(NUM2INT(out) == 42);
+
+        sl_destroy(state);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -497,6 +513,8 @@ main(int argc, char *argv[])
         test_eval_keyword();
         test_eval_type_assertion();
         test_eval_parametric_type();
+
+        test_anonymous_function();
 
         test_eval_function_call();
         /*test_eval_eval();*/

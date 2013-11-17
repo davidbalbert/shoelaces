@@ -95,6 +95,10 @@ struct SLMethod
         /* For C functions */
         sl_value (*cfunc_body)();
         sl_cfunc_invoker invoker;
+
+        /* For LISP functions */
+        sl_value bodies;
+        sl_value environment;
 };
 
 #define SL_BASIC(v)         ((struct SLBasic *)(v))
@@ -148,6 +152,7 @@ struct sl_interpreter_state {
         sl_value s_if;
         sl_value s_annotate;
         sl_value s_ampersand;
+        sl_value s_fn;
 
         int gc_enabled;
 };

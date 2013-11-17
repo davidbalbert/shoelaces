@@ -11,3 +11,5 @@ int sl_env_has_key(struct sl_interpreter_state *state, sl_value environment, sl_
 sl_value sl_env_get(struct sl_interpreter_state *state, sl_value environment, sl_value name);
 
 size_t sl_keyword_table_size(struct sl_interpreter_state *state);
+
+sl_value sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, sl_value environment);

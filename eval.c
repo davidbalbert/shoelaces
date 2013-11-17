@@ -217,6 +217,11 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                         assert(sl_type(val) == type);
 
                         return val;
+                } else if (state->s_fn == first) {
+                        /* TODO: Figure out assert that goes here */
+                        sl_value signature = sl_second(state, expression);
+                        sl_value bodies = sl_rest(state, sl_rest(state, sl_rest(state, expression)));
+                        return sl_fn(state, signature, bodies, environment);
                 } else {
                         sl_value f = sl_eval(state, first, environment);
                         sl_value new_expression = sl_list_new(state, f, sl_rest(state, expression));
@@ -229,6 +234,11 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
 
                 /* TODO: make eval_each a map and eval */
                 return sl_apply(state, f, eval_each(state, args, environment));
+        } else if (sl_type(sl_first(state, expression)) == state->tList) {
+                sl_value f = sl_eval(state, sl_first(state, expression), environment);
+                sl_value new_expression = sl_list_new(state, f, sl_rest(state, expression));
+
+                return sl_eval(state, new_expression, environment);
         } else {
                 fprintf(stderr, "Error: %s is not implemented yet\n", sl_string_cstring(state, sl_inspect(state, expression)));
                 abort();

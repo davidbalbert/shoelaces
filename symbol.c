@@ -59,6 +59,7 @@ boot_symbol(struct sl_interpreter_state *state)
         state->s_if = sl_intern(state, "if");
         state->s_annotate = sl_intern(state, ":");
         state->s_ampersand = sl_intern(state, "&");
+        state->s_fn = sl_intern(state, "fn");
 }
 
 void
