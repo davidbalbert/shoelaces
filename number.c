@@ -31,10 +31,20 @@ NUM2INT(sl_value n)
         return SL_INTEGER(n)->value;
 }
 
+static sl_value
+integer_add_2(struct sl_interpreter_state *state, sl_value a, sl_value b)
+{
+        assert(sl_type(a) == state->tInteger);
+        assert(sl_type(b) == state->tInteger);
+
+        return sl_integer_new(state, NUM2INT(a) + NUM2INT(b));
+}
+
 void
 sl_init_number(struct sl_interpreter_state *state)
 {
         state->tInteger = sl_type_new(state, sl_string_new(state, "Integer"));
 
         sl_define_function(state, "inspect", integer_inspect, sl_list(state, 1, state->tInteger));
+        sl_define_function(state, "+", integer_add_2, sl_list(state, 2, state->tInteger, state->tInteger));
 }
