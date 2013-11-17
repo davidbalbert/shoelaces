@@ -130,6 +130,7 @@ mark(struct sl_interpreter_state *state, sl_value value)
                 mark(state, SL_METHOD_TABLE(value)->method);
                 mark(state, SL_METHOD_TABLE(value)->varargs_method);
                 mark(state, SL_METHOD_TABLE(value)->method_map);
+                mark(state, SL_METHOD_TABLE(value)->function);
         } else if (state->tMethod == type) {
                 mark(state, SL_METHOD(value)->signature);
                 mark(state, SL_METHOD(value)->function);

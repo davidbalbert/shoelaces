@@ -409,7 +409,7 @@ method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
         struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
 
         sl_value methods = method_list(state, method_table);
-        sl_value s = sl_string_new(state, "Methods for generic function \"");
+        sl_value s = sl_string_new(state, "Methods for function \"");
         s = sl_string_concat(state, s, function_name(state, mt->function));
         s = sl_string_concat(state, s, sl_string_new(state, "\":\n"));
         s = sl_string_concat(state, s, sl_list_join(state, methods, sl_string_new(state, "\n")));
