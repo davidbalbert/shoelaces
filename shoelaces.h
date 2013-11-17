@@ -73,6 +73,7 @@ struct SLMethodTable
         sl_value method; /* Method */
         sl_value varargs_method; /* Method */
         sl_value method_map; /* Association List */
+        sl_value function; /* Function */
 };
 
 struct sl_interpreter_state;
@@ -226,12 +227,14 @@ sl_value sl_reverse(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_empty(struct sl_interpreter_state *state, sl_value list);
 sl_value sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value seperator);
 sl_value sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value item);
+sl_value sl_list_concat(struct sl_interpreter_state *state, sl_value lists);
 
 /* association lists */
 
 sl_value sl_alist_has_key(struct sl_interpreter_state *state, sl_value alist, sl_value key);
 sl_value sl_alist_get(struct sl_interpreter_state *state, sl_value alist, sl_value key);
 sl_value sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, sl_value value);
+sl_value sl_alist_values(struct sl_interpreter_state *state, sl_value alist);
 
 /* strings */
 char *sl_string_cstring(struct sl_interpreter_state *state, sl_value string);

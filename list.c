@@ -214,6 +214,16 @@ sl_alist_set(struct sl_interpreter_state *state, sl_value alist, sl_value key, s
 }
 
 sl_value
+sl_alist_values(struct sl_interpreter_state *state, sl_value alist)
+{
+        if (alist == state->sl_empty_list) {
+                return state->sl_empty_list;
+        } else {
+                return sl_list_new(state, sl_second(state, sl_first(state, alist)), sl_alist_values(state, sl_rest(state, alist)));
+        }
+}
+
+sl_value
 sl_list_contains(struct sl_interpreter_state *state, sl_value list, sl_value item)
 {
         if (list == state->sl_empty_list) {

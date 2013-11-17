@@ -7,12 +7,16 @@
 static void add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_body)(), sl_value type_list);
 
 static sl_value
-method_table_new(struct sl_interpreter_state *state)
+method_table_new(struct sl_interpreter_state *state, sl_value function)
 {
+        assert(sl_type(function) == state->tFunction);
+
         sl_value method_table = sl_gc_alloc(state, sizeof(struct SLMethodTable));
         SL_BASIC(method_table)->type = state->tMethodTable;
         SL_METHOD_TABLE(method_table)->method_map = state->sl_empty_list;
         SL_METHOD_TABLE(method_table)->method = NULL;
+        SL_METHOD_TABLE(method_table)->varargs_method = NULL;
+        SL_METHOD_TABLE(method_table)->function = function;
 
         return method_table;
 }
@@ -25,7 +29,7 @@ func_new(struct sl_interpreter_state *state, sl_value name)
         sl_value f = sl_gc_alloc(state, sizeof(struct SLFunction));
         SL_BASIC(f)->type = state->tFunction;
         SL_FUNCTION(f)->name = name;
-        SL_FUNCTION(f)->method_table = method_table_new(state);
+        SL_FUNCTION(f)->method_table = method_table_new(state, f);
 
         return f;
 }
@@ -293,7 +297,7 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
 }
 
 static sl_value
-method_table_for_signature(struct sl_interpreter_state *state, sl_value method_table, sl_value signature)
+method_table_for_signature(struct sl_interpreter_state *state, sl_value method_table, sl_value signature, sl_value func)
 {
         if (signature == state->sl_empty_list) {
                 return method_table;
@@ -312,11 +316,11 @@ method_table_for_signature(struct sl_interpreter_state *state, sl_value method_t
 
         if (sl_alist_has_key(state, method_map, next_arg) == state->sl_true) {
                 sl_value next_method_table = sl_alist_get(state, method_map, next_arg);
-                return method_table_for_signature(state, next_method_table, rest_signature);
+                return method_table_for_signature(state, next_method_table, rest_signature, func);
         } else {
-                sl_value next_method_table = method_table_new(state);
+                sl_value next_method_table = method_table_new(state, func);
                 SL_METHOD_TABLE(method_table)->method_map = sl_alist_set(state, method_map, next_arg, next_method_table);
-                return method_table_for_signature(state, next_method_table, rest_signature);
+                return method_table_for_signature(state, next_method_table, rest_signature, func);
         }
 }
 
@@ -325,7 +329,7 @@ add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_
 {
         sl_value m = method_new_cfunc(state, func, method_body, signature);
 
-        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature);
+        sl_value method_table = method_table_for_signature(state, SL_FUNCTION(func)->method_table, signature, func);
 
         /* TODO: Warn on signature prefix + varargs ambiguity. E.g.:
          * (Int & Int)
@@ -348,6 +352,18 @@ add_method(struct sl_interpreter_state *state, sl_value func, sl_value (*method_
 }
 
 static sl_value
+function_name(struct sl_interpreter_state *state, sl_value func)
+{
+        assert(sl_type(func) == state->tFunction);
+
+        if (SL_FUNCTION(func)->name) {
+                return SL_FUNCTION(func)->name;
+        } else {
+                return sl_string_new(state, "(anonymous)");
+        }
+}
+
+static sl_value
 function_inspect(struct sl_interpreter_state *state, sl_value func)
 {
         if (SL_FUNCTION(func)->name == NULL) {
@@ -361,19 +377,42 @@ function_inspect(struct sl_interpreter_state *state, sl_value func)
 }
 
 static sl_value
-method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
+method_list(struct sl_interpreter_state *state, sl_value method_table)
 {
         struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
-        sl_value s = sl_string_new(state, "#<MethodTable method: ");
+        sl_value ret = state->sl_empty_list;
 
-        if (mt->method != NULL) {
-                s = sl_string_concat(state, s, sl_inspect(state, mt->method));
-        } else {
-                s = sl_string_concat(state, s, sl_string_new(state, "NULL"));
+        sl_value tables = sl_alist_values(state, mt->method_map);
+        sl_value methods = state->sl_empty_list;
+
+        for (sl_value t = tables; t != state->sl_empty_list; t = sl_rest(state, t)) {
+                methods = sl_list_new(state, method_list(state, sl_first(state, t)), methods);
         }
 
-        s = sl_string_concat(state, s, sl_string_new(state, " method_map: "));
-        s = sl_string_concat(state, s, sl_inspect(state, mt->method_map));
+        ret = sl_list_concat(state, methods);
+
+        if (mt->method) {
+                ret = sl_list_new(state, mt->method, ret);
+        }
+
+        if (mt->varargs_method) {
+                ret = sl_list_new(state, mt->varargs_method, ret);
+        }
+
+        return ret;
+}
+
+static sl_value
+method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
+{
+        assert(sl_type(method_table) == state->tMethodTable);
+        struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
+
+        sl_value methods = method_list(state, method_table);
+        sl_value s = sl_string_new(state, "Methods for generic function \"");
+        s = sl_string_concat(state, s, function_name(state, mt->function));
+        s = sl_string_concat(state, s, sl_string_new(state, "\":\n"));
+        s = sl_string_concat(state, s, sl_list_join(state, methods, sl_string_new(state, "\n")));
 
         return s;
 }
@@ -382,10 +421,11 @@ static sl_value
 method_inspect(struct sl_interpreter_state *state, sl_value method)
 {
         struct SLMethod *m = SL_METHOD(method);
-        sl_value s = sl_string_new(state, "#<Method ");
-        s = sl_string_concat(state, s, sl_inspect(state, SL_FUNCTION(m->function)->name));
+        sl_value s = sl_string_new(state, "(");
+        s = sl_string_concat(state, s, function_name(state, m->function));
         s = sl_string_concat(state, s, sl_string_new(state, " "));
-        s = sl_string_concat(state, s, sl_inspect(state, m->signature));
+        s = sl_string_concat(state, s, sl_list_join(state, m->signature, sl_string_new(state, " ")));
+        s = sl_string_concat(state, s, sl_string_new(state, ")"));
 
         return s;
 }
@@ -519,6 +559,14 @@ sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
         }
 }
 
+static sl_value
+methods(struct sl_interpreter_state *state, sl_value func)
+{
+        assert(sl_type(func) == state->tFunction);
+
+        return SL_FUNCTION(func)->method_table;
+}
+
 void
 sl_init_function(struct sl_interpreter_state *state)
 {
@@ -534,4 +582,5 @@ sl_init_function(struct sl_interpreter_state *state)
         sl_define_function(state, "inspect", method_inspect, sl_list(state, 1, state->tMethod));
         sl_define_function(state, "inspect", method_table_inspect, sl_list(state, 1, state->tMethodTable));
 
+        sl_define_function(state, "methods", methods, sl_list(state, 1, state->tFunction));
 }
