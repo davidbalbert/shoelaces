@@ -264,7 +264,7 @@ read(struct sl_interpreter_state *state, struct sl_reader *reader)
                 eat_whitespace(reader);
 
                 if (at_end_of_input(reader)) {
-                        return NULL;
+                        return SLUndefined;
                 }
 
                 ch = peek(reader);
@@ -339,9 +339,9 @@ read_list(struct sl_interpreter_state *state, struct sl_reader *reader)
 
                 val = read(state, reader);
 
-                /* val will be NULL only if we're at the end of input, but we
-                 * checked for that already. */
-                assert(val != NULL);
+                /* val will be SLUndefined only if we're at the end of input,
+                 * but we checked for that already. */
+                assert(val != SLUndefined);
 
                 list = sl_list_new(state, val, list);
         }
@@ -433,7 +433,7 @@ read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reade
 
         skip_one(reader);
 
-        sl_value val = NULL;
+        sl_value val = SLUndefined;
 
         while (1) {
                 eat_whitespace(reader);
@@ -454,7 +454,7 @@ read_type_expression(struct sl_interpreter_state *state, struct sl_reader *reade
                 val = read(state, reader);
 
                 /* we just checked to see if we're at the end of input */
-                assert(val != NULL);
+                assert(val != SLUndefined);
 
                 type_expression = sl_list_new(state, val, type_expression);
         }

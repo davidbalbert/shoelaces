@@ -249,8 +249,8 @@ test_gc()
                 sl_string_new(state, "hello, world");
         }
 
-        sl_free_keep_list(state->keep_list, NULL);
-        state->keep_list = NULL;
+        sl_free_keep_list(state->keep_list, SLUndefined);
+        state->keep_list = SLUndefined;
 
         sl_gc_run(state);
 

@@ -174,10 +174,10 @@ boot_type(struct sl_interpreter_state *state)
         state->tType = boot_type_new(state, sl_string_new(state, "Type"));
         SL_BASIC(state->tType)->type = state->tType;
 
-        state->tAny = boot_abstract_type_new(state, sl_string_new(state, "Any"), NULL);
-        state->tNone = boot_abstract_type_new(state, sl_string_new(state, "None"), NULL);
+        state->tAny = boot_abstract_type_new(state, sl_string_new(state, "Any"), SLUndefined);
+        state->tNone = boot_abstract_type_new(state, sl_string_new(state, "None"), SLUndefined);
 
-        SL_TYPE(state->tAny)->super = NULL;
+        SL_TYPE(state->tAny)->super = SLUndefined;
         SL_TYPE(state->tType)->super = state->tAny;
 }
 

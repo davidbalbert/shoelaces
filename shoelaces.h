@@ -1,7 +1,9 @@
 #include "khash.h"
 
 /* types */
-typedef void * sl_value;
+typedef uintptr_t sl_value;
+
+#define SLUndefined 0
 
 struct SLBasic
 {

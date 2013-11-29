@@ -17,8 +17,8 @@ method_table_new(struct sl_interpreter_state *state, sl_value function)
         sl_value method_table = sl_gc_alloc(state, sizeof(struct SLMethodTable));
         SL_BASIC(method_table)->type = state->tMethodTable;
         SL_METHOD_TABLE(method_table)->method_map = state->sl_empty_list;
-        SL_METHOD_TABLE(method_table)->method = NULL;
-        SL_METHOD_TABLE(method_table)->varargs_method = NULL;
+        SL_METHOD_TABLE(method_table)->method = SLUndefined;
+        SL_METHOD_TABLE(method_table)->varargs_method = SLUndefined;
         SL_METHOD_TABLE(method_table)->function = function;
 
         return method_table;
@@ -27,7 +27,7 @@ method_table_new(struct sl_interpreter_state *state, sl_value function)
 sl_value
 func_new(struct sl_interpreter_state *state, sl_value name)
 {
-        assert(name == NULL || sl_type(name) == state->tSymbol);
+        assert(name == SLUndefined || sl_type(name) == state->tSymbol);
 
         sl_value f = sl_gc_alloc(state, sizeof(struct SLFunction));
         SL_BASIC(f)->type = state->tFunction;
@@ -308,7 +308,7 @@ sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, s
         assert(sl_type(signature) == state->tList);
         assert(sl_type(bodies) == state->tList);
 
-        sl_value func = func_new(state, NULL);
+        sl_value func = func_new(state, SLUndefined);
 
         add_lisp_method(state, func, signature, bodies, environment);
 
@@ -498,7 +498,7 @@ method_inspect(struct sl_interpreter_state *state, sl_value method)
 static int
 is_subtype_of_type(sl_value t, sl_value type)
 {
-        while (t != NULL) {
+        while (t != SLUndefined) {
                 if (t == type) {
                         return 1;
                 }
@@ -534,7 +534,7 @@ static sl_value
 lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_value args)
 {
         struct SLMethodTable *mt = SL_METHOD_TABLE(method_table);
-        sl_value method = NULL;
+        sl_value method = SLUndefined;
         sl_value next_method_table;
 
         if (args == state->sl_empty_list) {
@@ -543,7 +543,7 @@ lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_valu
                 } else if (mt->varargs_method) {
                         return mt->varargs_method;
                 } else {
-                        return NULL;
+                        return SLUndefined;
                 }
         }
 
@@ -557,7 +557,7 @@ lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_valu
                 next_method_table = sl_alist_get(state, mt->method_map, first_arg);
                 method = lookup_method(state, next_method_table, sl_rest(state, args));
 
-                if (method != NULL) {
+                if (method != SLUndefined) {
                         return method;
                 }
         }
@@ -565,12 +565,12 @@ lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_valu
 
         sl_value type = sl_type(first_arg);
 
-        while (type != NULL) {
+        while (type != SLUndefined) {
                 if (sl_alist_has_key(state, mt->method_map, type) == state->sl_true) {
                         next_method_table = sl_alist_get(state, mt->method_map, type);
                         method = lookup_method(state, next_method_table, sl_rest(state, args));
 
-                        if (method != NULL) {
+                        if (method != SLUndefined) {
                                 return method;
                         } else if (all_args_are_of_type(state, type, args) && SL_METHOD_TABLE(next_method_table)->varargs_method) {
                                 return SL_METHOD_TABLE(next_method_table)->varargs_method;
@@ -580,7 +580,7 @@ lookup_method(struct sl_interpreter_state *state, sl_value method_table, sl_valu
                 type = SL_TYPE(type)->super;
         }
 
-        return NULL;
+        return SLUndefined;
 }
 
 static sl_value
@@ -588,7 +588,7 @@ method_for_arguments(struct sl_interpreter_state *state, sl_value func, sl_value
 {
         sl_value method = lookup_method(state, SL_FUNCTION(func)->method_table, args);
 
-        if (method == NULL) {
+        if (method == SLUndefined) {
                 /* TODO: replace sl_types with "map" and "type" */
                 sl_value types = sl_types(state, args);
 

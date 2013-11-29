@@ -20,7 +20,7 @@ keyword_table_get(struct sl_interpreter_state *state, char *name)
         iter = kh_get(str, state->keyword_table, name);
 
         if (iter == kh_end(state->keyword_table)) {
-                return NULL;
+                return SLUndefined;
         } else {
                 return kh_value(state->keyword_table, iter);
         }

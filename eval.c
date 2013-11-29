@@ -12,7 +12,7 @@ sl_symbol_table_get(struct sl_interpreter_state *state, char *name)
         iter = kh_get(str, state->symbol_table, name);
 
         if (iter == kh_end(state->symbol_table)) {
-                return NULL;
+                return SLUndefined;
         } else {
                 return kh_value(state->symbol_table, iter);
         }
@@ -137,7 +137,7 @@ sl_destroy(struct sl_interpreter_state *state)
 {
         kh_destroy(str, state->symbol_table);
         kh_destroy(str, state->keyword_table);
-        sl_free_keep_list(state->keep_list, NULL);
+        sl_free_keep_list(state->keep_list, SLUndefined);
         sl_gc_free_all(state);
         free(state);
 }

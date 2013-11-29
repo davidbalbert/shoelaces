@@ -50,7 +50,7 @@ sl_gc_run(struct sl_interpreter_state *state)
 
         struct sl_keep_list *kl = state->keep_list;
 
-        while (kl != NULL) {
+        while (kl != SLUndefined) {
                 mark(state, kl->first);
                 kl = kl->rest;
         }
@@ -157,7 +157,7 @@ sweep_all(struct sl_interpreter_state *state)
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i] && !marked(heap->slots[i])) {
                         sl_dealloc(state, heap->slots[i]);
-                        heap->slots[i] = NULL;
+                        heap->slots[i] = SLUndefined;
                         heap->size--;
                 }
         }
@@ -205,7 +205,7 @@ sl_dealloc(struct sl_interpreter_state *state, sl_value value)
                 free(SL_STRING(value)->value);
         }
 
-        free(value);
+        free((void *)value);
 }
 
 void
@@ -216,7 +216,7 @@ sl_gc_free_all(struct sl_interpreter_state *state)
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i]) {
                         sl_dealloc(state, heap->slots[i]);
-                        heap->slots[i] = NULL;
+                        heap->slots[i] = SLUndefined;
                         heap->size--;
                 }
         }
@@ -247,7 +247,7 @@ find_free_slot(struct sl_interpreter_state *state)
                 }
         }
 
-        return NULL;
+        return SLUndefined;
 }
 
 static void
@@ -307,7 +307,7 @@ sl_init_gc(struct sl_interpreter_state *state)
 {
         struct sl_heap *heap;
         state->heap = heap = (struct sl_heap *)sl_native_malloc(sizeof(struct sl_heap));
-        state->keep_list = NULL;
+        state->keep_list = SLUndefined;
         state->gc_enabled = 1;
 
         heap->capacity = INITIAL_HEAP_CAPACITY;

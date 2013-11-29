@@ -58,8 +58,7 @@ sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value sepe
 static
 sl_value sl_empty_list_new(struct sl_interpreter_state *state)
 {
-        /* TODO: these NULL's should move to undefineds when sl_false becomes 0 */
-        return sl_alloc_list(state, NULL, NULL, 0);
+        return sl_alloc_list(state, SLUndefined, SLUndefined, 0);
 }
 
 sl_value
@@ -276,7 +275,7 @@ void
 boot_list(struct sl_interpreter_state *state)
 {
         state->sl_empty_list = sl_empty_list_new(state);
-        state->tList = boot_abstract_type_new(state, sl_string_new(state, "List"), NULL);
+        state->tList = boot_abstract_type_new(state, sl_string_new(state, "List"), SLUndefined);
 
         /* TODO: Make this actually be List{None} */
         SL_BASIC(state->sl_empty_list)->type = state->tList;
