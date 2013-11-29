@@ -37,7 +37,14 @@ sl_list_join(struct sl_interpreter_state *state, sl_value strings, sl_value sepe
 
         /* TODO: tagged falsy values would be nice */
         while (sl_empty(state, strings) != state->sl_true) {
-                output = sl_string_concat(state, output, sl_inspect(state, sl_first(state, strings)));
+                sl_value v = sl_first(state, strings);
+
+                if (sl_type(v) == state->tString) {
+                        output = sl_string_concat(state, output, v);
+                } else {
+                        output = sl_string_concat(state, output, sl_inspect(state, v));
+                }
+
                 strings = sl_rest(state, strings);
 
                 /* TODO: tagged falsey values */
@@ -289,7 +296,7 @@ sl_init_list(struct sl_interpreter_state *state)
         sl_define_function(state, "size", sl_list_size, sl_list(state, 1, state->tList));
         sl_define_function(state, "reverse", sl_reverse, sl_list(state, 1, state->tList));
         sl_define_function(state, "empty?", sl_empty, sl_list(state, 1, state->tList));
-        sl_define_function(state, "join", sl_empty, sl_list(state, 2, state->tList, state->tString));
+        sl_define_function(state, "join", sl_list_join, sl_list(state, 2, state->tList, state->tString));
         sl_define_function(state, "contains?", sl_list_contains, sl_list(state, 2, state->tList, state->tAny));
         sl_define_function(state, "inspect", list_inspect, sl_list(state, 1, state->tList));
         sl_define_function(state, "concat", sl_list_concat, sl_list(state, 2, state->s_ampersand, state->tList));
