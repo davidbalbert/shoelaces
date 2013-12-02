@@ -26,13 +26,35 @@ sl_intern_string(struct sl_interpreter_state *state, sl_value string)
         return sl_intern(state, sl_string_cstring(state, string));
 }
 
-static
-sl_value new_symbol(struct sl_interpreter_state *state, sl_value name)
+static sl_value
+new_symbol(struct sl_interpreter_state *state, sl_value name)
 {
         sl_value sym = sl_gc_alloc(state, sizeof(struct SLSymbol));
         SL_BASIC(sym)->type = state->tSymbol;
         SL_SYMBOL(sym)->name = name;
+        SL_SYMBOL(sym)->type_annotation = SLUndefined;
         return sym;
+}
+
+sl_value
+sl_symbol_annotate_with_type(struct sl_interpreter_state *state, sl_value sym, sl_value type)
+{
+        assert(sl_type(sym) == state->tSymbol);
+        assert(sl_type(type) == state->tType);
+
+        sl_value new_sym = new_symbol(state, SL_SYMBOL(sym)->name);
+        SL_SYMBOL(new_sym)->type_annotation = type;
+
+        return new_sym;
+}
+
+sl_value
+sl_symbol_type_annotation(struct sl_interpreter_state *state, sl_value sym)
+{
+        assert(sl_type(sym) == state->tSymbol);
+        assert(SL_SYMBOL(sym)->type_annotation != SLUndefined);
+
+        return SL_SYMBOL(sym)->type_annotation;
 }
 
 static sl_value
@@ -65,6 +87,6 @@ boot_symbol(struct sl_interpreter_state *state)
 void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "intern", sl_intern_string, sl_list(state, 1, state->tString));
-        sl_define_function(state, "inspect", symbol_inspect, sl_list(state, 1, state->tSymbol));
+        //sl_define_function(state, "intern", sl_intern_string, sl_list(state, 1, state->tString));
+        sl_define_function(state, "inspect", symbol_inspect, "(sym:Symbol)");
 }

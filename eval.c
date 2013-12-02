@@ -300,6 +300,6 @@ sl_equal(struct sl_interpreter_state *state, sl_value a, sl_value b) {
 void
 sl_init_eval(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "identical?", sl_identical, sl_list(state, 2, state->tAny, state->tAny));
-        sl_define_function(state, "=", sl_equal, sl_list(state, 2, state->tAny, state->tAny));
+        //sl_define_function(state, "identical?", sl_identical, sl_list(state, 2, state->tAny, state->tAny));
+        //sl_define_function(state, "=", sl_equal, sl_list(state, 2, state->tAny, state->tAny));
 }

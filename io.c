@@ -42,6 +42,6 @@ sl_p(struct sl_interpreter_state *state, sl_value val)
 void
 sl_init_io(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "p", p, sl_list(state, 1, state->tAny));
-        sl_define_function(state, "inspect", generic_inspect, sl_list(state, 1, state->tAny));
+        sl_define_function(state, "p", p, "(v:Any)");
+        sl_define_function(state, "inspect", generic_inspect, "(v:Any)");
 }

@@ -65,6 +65,26 @@ sl_type(sl_value object)
         return SL_BASIC(object)->type;
 }
 
+int
+sl_is_subtype_of_type(sl_value t, sl_value type)
+{
+        while (t != SLUndefined) {
+                if (t == type) {
+                        return 1;
+                }
+
+                t = SL_TYPE(t)->super;
+        }
+
+        return 0;
+}
+
+int
+sl_is_a_list(struct sl_interpreter_state *state, sl_value v)
+{
+        return sl_is_subtype_of_type(sl_type(v), state->tList);
+}
+
 static size_t
 type_arity(struct sl_interpreter_state *state, sl_value type)
 {
@@ -187,11 +207,11 @@ sl_init_type(struct sl_interpreter_state *state)
         SL_TYPE(state->tAny)->parameters = state->sl_empty_list;
         SL_TYPE(state->tNone)->parameters = state->sl_empty_list;
 
-        sl_define_function(state, "super", sl_super, sl_list(state, 1, state->tType));
-        sl_define_function(state, "abstract?", sl_abstract, sl_list(state, 1, state->tType));
-        sl_define_function(state, "type", type_of, sl_list(state, 1, state->tAny));
+        sl_define_function(state, "super", sl_super, "(t:Type)");
+        sl_define_function(state, "abstract?", sl_abstract, "(t:Type)");
+        sl_define_function(state, "type", type_of, "(v:Any)");
 
-        sl_define_function(state, "apply-type", sl_apply_type, sl_list(state, 3, state->tType, state->s_ampersand, state->tType));
+        sl_define_function(state, "apply-type", sl_apply_type, "(abstract:Type & parameters:Type)");
 
-        sl_define_function(state, "inspect", type_inspect, sl_list(state, 1, state->tType));
+        sl_define_function(state, "inspect", type_inspect, "(t:Type)");
 }

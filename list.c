@@ -286,17 +286,17 @@ sl_init_list(struct sl_interpreter_state *state)
 {
         SL_TYPE(state->tList)->parameters = sl_list(state, 1, sl_intern(state, "T"));
 
-        sl_define_function(state, "first", sl_first, sl_list(state, 1, state->tList));
-        sl_define_function(state, "second", sl_second, sl_list(state, 1, state->tList));
-        sl_define_function(state, "third", sl_third, sl_list(state, 1, state->tList));
-        sl_define_function(state, "fourth", sl_fourth, sl_list(state, 1, state->tList));
-        sl_define_function(state, "fifth", sl_fifth, sl_list(state, 1, state->tList));
-        sl_define_function(state, "rest", sl_rest, sl_list(state, 1, state->tList));
-        sl_define_function(state, "size", sl_list_size, sl_list(state, 1, state->tList));
-        sl_define_function(state, "reverse", sl_reverse, sl_list(state, 1, state->tList));
-        sl_define_function(state, "empty?", sl_empty, sl_list(state, 1, state->tList));
-        sl_define_function(state, "join", sl_list_join, sl_list(state, 2, state->tList, state->tString));
-        sl_define_function(state, "contains?", sl_list_contains, sl_list(state, 2, state->tList, state->tAny));
-        sl_define_function(state, "inspect", list_inspect, sl_list(state, 1, state->tList));
-        sl_define_function(state, "concat", sl_list_concat, sl_list(state, 2, state->s_ampersand, state->tList));
+        //sl_define_function(state, "first", sl_first, sl_list(state, 1, state->tList));
+        //sl_define_function(state, "second", sl_second, sl_list(state, 1, state->tList));
+        //sl_define_function(state, "third", sl_third, sl_list(state, 1, state->tList));
+        //sl_define_function(state, "fourth", sl_fourth, sl_list(state, 1, state->tList));
+        //sl_define_function(state, "fifth", sl_fifth, sl_list(state, 1, state->tList));
+        //sl_define_function(state, "rest", sl_rest, sl_list(state, 1, state->tList));
+        sl_define_function(state, "size", sl_list_size, "(l:List)");
+        //sl_define_function(state, "reverse", sl_reverse, "(l:List)");
+        sl_define_function(state, "empty?", sl_empty, "(l:List)");
+        sl_define_function(state, "join", sl_list_join, "(l:List sep:String)");
+        sl_define_function(state, "contains?", sl_list_contains, "(l:List v:Any)");
+        sl_define_function(state, "inspect", list_inspect, "(l:List)");
+        sl_define_function(state, "concat", sl_list_concat, "(& lists:List)");
 }

@@ -13,3 +13,9 @@ sl_value sl_env_get(struct sl_interpreter_state *state, sl_value environment, sl
 size_t sl_keyword_table_size(struct sl_interpreter_state *state);
 
 sl_value sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, sl_value environment);
+
+typedef sl_value (*sl_c_map_func)(struct sl_interpreter_state *state, sl_value in);
+sl_value sl_c_map(struct sl_interpreter_state *state, sl_c_map_func f, sl_value list);
+
+int sl_is_subtype_of_type(sl_value t, sl_value type);
+int sl_is_a_list(struct sl_interpreter_state *state, sl_value v);

@@ -39,5 +39,5 @@ boot_boolean(struct sl_interpreter_state *state)
 void
 sl_init_boolean(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "inspect", boolean_inspect, sl_list(state, 1, state->tBoolean));
+        sl_define_function(state, "inspect", boolean_inspect, "(b:Boolean)");
 }

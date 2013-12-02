@@ -118,6 +118,7 @@ mark(struct sl_interpreter_state *state, sl_value value)
                 mark(state, SL_TYPE(value)->parameters);
         } else if (state->tSymbol == type) {
                 mark(state, SL_SYMBOL(value)->name);
+                mark(state, SL_SYMBOL(value)->type_annotation);
         } else if (state->tKeyword == type) {
                 mark(state, SL_KEYWORD(value)->name);
         } else if (state->tList == type) {

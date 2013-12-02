@@ -27,6 +27,7 @@ struct SLSymbol
 {
         struct SLBasic basic;
         sl_value name; /* String */
+        sl_value type_annotation; /* Type */
 };
 
 struct SLKeyword
@@ -184,7 +185,7 @@ sl_value sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_val
 sl_value sl_def(struct sl_interpreter_state *state, sl_value name, sl_value value);
 
 /* functions */
-void sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), sl_value type_list);
+void sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), char *signature);
 sl_value sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args);
 
 /* gc */
@@ -215,6 +216,8 @@ long NUM2INT(sl_value n);
 /* symbols */
 sl_value sl_intern(struct sl_interpreter_state *state, char *name);
 sl_value sl_intern_string(struct sl_interpreter_state *state, sl_value string);
+sl_value sl_symbol_annotate_with_type(struct sl_interpreter_state *state, sl_value sym, sl_value type);
+sl_value sl_symbol_type_annotation(struct sl_interpreter_state *state, sl_value sym);
 
 /* keywords */
 sl_value sl_intern_keyword(struct sl_interpreter_state *state, char *name);

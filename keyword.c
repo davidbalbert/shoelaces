@@ -82,5 +82,5 @@ boot_keyword(struct sl_interpreter_state *state)
 void
 sl_init_keyword(struct sl_interpreter_state *state)
 {
-        sl_define_function(state, "inspect", keyword_inspect, sl_list(state, 1, state->tKeyword));
+        sl_define_function(state, "inspect", keyword_inspect, "(kw:Keyword)");
 }

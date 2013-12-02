@@ -315,8 +315,58 @@ sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, s
         return func;
 }
 
+static sl_value
+process_annotation(struct sl_interpreter_state *state, sl_value expr)
+{
+        /* Annotation expression. e.g (: Foo Bar) */
+        if (sl_is_a_list(state, expr)) {
+                assert(NUM2INT(sl_list_size(state, expr)) == 3);
+                assert(sl_first(state, expr) == state->s_annotate);
+
+                sl_value name = sl_second(state, expr);
+
+                assert(sl_type(name) == state->tSymbol);
+
+                if (sl_second(state, expr) == state->s_ampersand) {
+                        fprintf(stderr, "Error: Special symbol `&' cannot be annotated in a method signature\n");
+                        abort();
+                }
+
+                /* Eval here to call annotate-type if needed. This techincally
+                 * supports arbitrary expression evaluation as long as it
+                 * returns a type, but this isn't actually part of the
+                 * language. It's just a side effect of the implementation.
+                 * This will probably not be allowed once we have a compiler.
+                 */
+                sl_value type = sl_eval(state, sl_third(state, expr), state->global_env);
+
+                assert(sl_type(type) == state->tType);
+
+                return sl_symbol_annotate_with_type(state, name, type);
+        } else {
+                assert(sl_type(expr) == state->tSymbol);
+
+                /* Don't annotate & */
+                if (expr == state->s_ampersand) {
+                        return expr;
+                }
+
+                return sl_symbol_annotate_with_type(state, expr, state->tAny);
+        }
+}
+
+static sl_value
+read_signature(struct sl_interpreter_state *state, char *signature)
+{
+        sl_value args = sl_read(state, signature);
+
+        args = sl_c_map(state, process_annotation, args);
+
+        return args;
+}
+
 void
-sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), sl_value type_list)
+sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*method_body)(), char *signature)
 {
         sl_value func_name = sl_intern(state, name);
         sl_value func;
@@ -332,7 +382,9 @@ sl_define_function(struct sl_interpreter_state *state, char *name, sl_value (*me
                 func = func_new(state, func_name);
         }
 
-        add_c_method(state, func, type_list, method_body);
+        sl_value arg_list = read_signature(state, signature);
+
+        add_c_method(state, func, arg_list, method_body);
 
         if (!sl_env_has_key(state, state->global_env, func_name)) {
                 sl_def(state, func_name, func);
@@ -353,16 +405,18 @@ method_table_for_signature(struct sl_interpreter_state *state, sl_value method_t
                 signature = sl_rest(state, signature);
         }
 
-        sl_value next_arg = sl_first(state, signature);
+        sl_value next_arg_name = sl_first(state, signature);
+        sl_value next_arg_type = sl_symbol_type_annotation(state, next_arg_name);
+
         sl_value method_map = SL_METHOD_TABLE(method_table)->method_map;
         sl_value rest_signature = sl_rest(state, signature);
 
-        if (sl_alist_has_key(state, method_map, next_arg) == state->sl_true) {
-                sl_value next_method_table = sl_alist_get(state, method_map, next_arg);
+        if (sl_alist_has_key(state, method_map, next_arg_type) == state->sl_true) {
+                sl_value next_method_table = sl_alist_get(state, method_map, next_arg_type);
                 return method_table_for_signature(state, next_method_table, rest_signature, func);
         } else {
                 sl_value next_method_table = method_table_new(state, func);
-                SL_METHOD_TABLE(method_table)->method_map = sl_alist_set(state, method_map, next_arg, next_method_table);
+                SL_METHOD_TABLE(method_table)->method_map = sl_alist_set(state, method_map, next_arg_type, next_method_table);
                 return method_table_for_signature(state, next_method_table, rest_signature, func);
         }
 }
@@ -483,36 +537,43 @@ method_table_inspect(struct sl_interpreter_state *state, sl_value method_table)
 }
 
 static sl_value
+arg_with_type(struct sl_interpreter_state *state, sl_value name)
+{
+        assert(sl_type(name) == state->tSymbol);
+
+        if (name == state->s_ampersand) {
+                return name;
+        }
+
+        assert(sl_symbol_type_annotation(state, name) != SLUndefined);
+
+        sl_value s = sl_inspect(state, name);
+        s = sl_string_concat(state, s, sl_string_new(state, ":"));
+        s = sl_string_concat(state, s, sl_inspect(state, sl_symbol_type_annotation(state, name)));
+
+        return s;
+}
+
+static sl_value
 method_inspect(struct sl_interpreter_state *state, sl_value method)
 {
         struct SLMethod *m = SL_METHOD(method);
         sl_value s = sl_string_new(state, "(");
         s = sl_string_concat(state, s, function_name_or_inspect(state, m->function));
         s = sl_string_concat(state, s, sl_string_new(state, " "));
-        s = sl_string_concat(state, s, sl_list_join(state, m->signature, sl_string_new(state, " ")));
+
+        sl_value signature_with_types = sl_c_map(state, arg_with_type, m->signature);
+
+        s = sl_string_concat(state, s, sl_list_join(state, signature_with_types, sl_string_new(state, " ")));
         s = sl_string_concat(state, s, sl_string_new(state, ")"));
 
         return s;
 }
 
 static int
-is_subtype_of_type(sl_value t, sl_value type)
-{
-        while (t != SLUndefined) {
-                if (t == type) {
-                        return 1;
-                }
-
-                t = SL_TYPE(t)->super;
-        }
-
-        return 0;
-}
-
-static int
 is_value_subtype_of_type(sl_value val, sl_value type)
 {
-        return is_subtype_of_type(sl_type(val), type);
+        return sl_is_subtype_of_type(sl_type(val), type);
 }
 
 static int
@@ -643,9 +704,9 @@ sl_init_function(struct sl_interpreter_state *state)
          * need it in the environment so that we can mark it. */
         state->tMethodTable = sl_type_new(state, sl_string_new(state, "MethodTable"));
 
-        sl_define_function(state, "inspect", function_inspect, sl_list(state, 1, state->tFunction));
-        sl_define_function(state, "inspect", method_inspect, sl_list(state, 1, state->tMethod));
-        sl_define_function(state, "inspect", method_table_inspect, sl_list(state, 1, state->tMethodTable));
+        sl_define_function(state, "inspect", function_inspect, "(f:Function)");
+        sl_define_function(state, "inspect", method_inspect, "(m:Method)");
+        sl_define_function(state, "inspect", method_table_inspect, "(mt:MethodTable)");
 
-        sl_define_function(state, "methods", methods, sl_list(state, 1, state->tFunction));
+        sl_define_function(state, "methods", methods, "(f:Function)");
 }
