@@ -158,7 +158,7 @@ sweep_all(struct sl_interpreter_state *state)
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i] && !marked(heap->slots[i])) {
                         sl_dealloc(state, heap->slots[i]);
-                        heap->slots[i] = SLUndefined;
+                        heap->slots[i] = (sl_value)NULL;
                         heap->size--;
                 }
         }
@@ -217,7 +217,7 @@ sl_gc_free_all(struct sl_interpreter_state *state)
         for (size_t i = 0; i < heap->capacity; i++) {
                 if (heap->slots[i]) {
                         sl_dealloc(state, heap->slots[i]);
-                        heap->slots[i] = SLUndefined;
+                        heap->slots[i] = (sl_value)NULL;
                         heap->size--;
                 }
         }
