@@ -87,6 +87,6 @@ boot_symbol(struct sl_interpreter_state *state)
 void
 sl_init_symbol(struct sl_interpreter_state *state)
 {
-        //sl_define_function(state, "intern", sl_intern_string, sl_list(state, 1, state->tString));
+        sl_define_function(state, "intern", sl_intern_string, "(s:String)");
         sl_define_function(state, "inspect", symbol_inspect, "(sym:Symbol)");
 }
