@@ -302,19 +302,6 @@ method_is_cfunc(struct sl_interpreter_state *state, sl_value method)
         return SL_METHOD(method)->method_type == SL_METHOD_CFUNC;
 }
 
-sl_value
-sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, sl_value environment)
-{
-        assert(sl_type(signature) == state->tList);
-        assert(sl_type(bodies) == state->tList);
-
-        sl_value func = func_new(state, SLUndefined);
-
-        add_lisp_method(state, func, signature, bodies, environment);
-
-        return func;
-}
-
 static sl_value
 process_annotation(struct sl_interpreter_state *state, sl_value expr)
 {
@@ -356,13 +343,28 @@ process_annotation(struct sl_interpreter_state *state, sl_value expr)
 }
 
 static sl_value
+process_signature(struct sl_interpreter_state *state, sl_value signature)
+{
+        return sl_c_map(state, process_annotation, signature);
+}
+
+static sl_value
 read_signature(struct sl_interpreter_state *state, char *signature)
 {
-        sl_value args = sl_read(state, signature);
+        return process_signature(state, sl_read(state, signature));
+}
 
-        args = sl_c_map(state, process_annotation, args);
+sl_value
+sl_fn(struct sl_interpreter_state *state, sl_value signature, sl_value bodies, sl_value environment)
+{
+        assert(sl_type(signature) == state->tList);
+        assert(sl_type(bodies) == state->tList);
 
-        return args;
+        sl_value func = func_new(state, SLUndefined);
+
+        add_lisp_method(state, func, process_signature(state, signature), bodies, environment);
+
+        return func;
 }
 
 void
@@ -680,8 +682,17 @@ sl_apply(struct sl_interpreter_state *state, sl_value func, sl_value args)
 
                 return val;
         } else {
-                fprintf(stderr, "Error: only cfuncs are supported at the moment.\n");
-                abort();
+                sl_value env = SL_METHOD(method)->environment;
+                sl_value bodies = SL_METHOD(method)->bodies;
+
+                sl_value out = SLUndefined;
+
+                while (bodies != state->sl_empty_list) {
+                        out = sl_eval(state, sl_first(state, bodies), env);
+                        bodies = sl_rest(state, bodies);
+                }
+
+                return out;
         }
 }
 

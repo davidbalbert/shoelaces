@@ -514,7 +514,7 @@ main(int argc, char *argv[])
         test_eval_type_assertion();
         test_eval_parametric_type();
 
-        //test_anonymous_function();
+        test_anonymous_function();
 
         //test_eval_function_call();
         /*test_eval_eval();*/

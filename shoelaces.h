@@ -100,8 +100,8 @@ struct SLMethod
         sl_cfunc_invoker invoker;
 
         /* For LISP functions */
-        sl_value bodies;
-        sl_value environment;
+        sl_value bodies; /* List */
+        sl_value environment; /* List of AList */
 };
 
 #define SL_BASIC(v)         ((struct SLBasic *)(v))

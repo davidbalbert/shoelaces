@@ -220,7 +220,7 @@ sl_eval(struct sl_interpreter_state *state, sl_value expression, sl_value enviro
                 } else if (state->s_fn == first) {
                         /* TODO: Figure out assert that goes here */
                         sl_value signature = sl_second(state, expression);
-                        sl_value bodies = sl_rest(state, sl_rest(state, sl_rest(state, expression)));
+                        sl_value bodies = sl_rest(state, sl_rest(state, expression));
                         return sl_fn(state, signature, bodies, environment);
                 } else {
                         sl_value f = sl_eval(state, first, environment);
