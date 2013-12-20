@@ -264,7 +264,7 @@ increase_heap_size(struct sl_interpreter_state *state)
                 abort();
         }
 
-        memzero(heap->slots + heap->capacity / 2, heap->capacity / 2);
+        memzero(heap->slots + heap->capacity / 2, (heap->capacity / 2) * sizeof(sl_value));
 }
 
 void *
